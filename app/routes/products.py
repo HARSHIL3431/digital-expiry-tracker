@@ -1,8 +1,12 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
-from .. import models, schemas, database
 
+from app import models, schemas, database
+from app.services.expiry_service import get_expiry_status
+
+# ✅ router MUST be defined before decorators
 router = APIRouter(prefix="/products", tags=["Products"])
+
 
 def get_db():
     db = database.SessionLocal()
@@ -10,6 +14,7 @@ def get_db():
         yield db
     finally:
         db.close()
+
 
 @router.post("/")
 def create_product(product: schemas.ProductCreate, db: Session = Depends(get_db)):
@@ -22,9 +27,28 @@ def create_product(product: schemas.ProductCreate, db: Session = Depends(get_db)
     db.refresh(db_product)
     return db_product
 
+
 @router.get("/")
 def get_products(db: Session = Depends(get_db)):
-    return db.query(models.Product).all()
+    products = db.query(models.Product).all()
+    response = []
+
+    for product in products:
+        expiry_info = get_expiry_status(product.expiry_date)
+
+        response.append({
+            "id": product.id,
+            "product_name": product.product_name,
+            "manufacture_date": product.manufacture_date,
+            "expiry_date": product.expiry_date,
+            "price": product.price,
+            "created_at": product.created_at,
+            "expiry_status": expiry_info["status"],
+            "days_left": expiry_info["days_left"]
+        })
+
+    return response
+
 
 @router.delete("/{product_id}")
 def delete_product(product_id: int, db: Session = Depends(get_db)):
