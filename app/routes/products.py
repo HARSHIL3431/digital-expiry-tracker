@@ -59,3 +59,36 @@ def delete_product(product_id: int, db: Session = Depends(get_db)):
     db.delete(product)
     db.commit()
     return {"message": "Product deleted"}
+
+@router.get("/expiry-status")
+def get_products_by_expiry_status(db: Session = Depends(get_db)):
+    products = db.query(models.Product).all()
+
+    grouped = {
+        "expired": [],
+        "near_expiry": [],
+        "fresh": []
+    }
+
+    for product in products:
+        expiry_info = get_expiry_status(product.expiry_date)
+
+        product_data = {
+            "id": product.id,
+            "product_name": product.product_name,
+            "manufacture_date": product.manufacture_date,
+            "expiry_date": product.expiry_date,
+            "price": product.price,
+            "created_at": product.created_at,
+            "expiry_status": expiry_info["status"],
+            "days_left": expiry_info["days_left"]
+        }
+
+        if expiry_info["status"] == "EXPIRED":
+            grouped["expired"].append(product_data)
+        elif expiry_info["status"] == "NEAR_EXPIRY":
+            grouped["near_expiry"].append(product_data)
+        else:
+            grouped["fresh"].append(product_data)
+
+    return grouped
