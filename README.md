@@ -1,140 +1,154 @@
-🧾 Digital Expiry Tracker
+# 🚀 Digital Expiry Tracker
 
-Digital Expiry Tracker is a personal-use web application that helps users track expiry dates of food and medicine items using OCR and automated reminders, reducing health risks and wastage.
+### AI-Assisted Expiry Management for Food & Medicine
 
-📖 Table of Contents
+---
 
-Overview
+## 📌 What is Digital Expiry Tracker?
 
-Features
+**Digital Expiry Tracker** is a smart web application that helps users track the expiry dates of **food and medicine items** using **OCR (Optical Character Recognition)** and automated reminders.
 
-Tech Stack
+It prevents health risks caused by expired products and reduces unnecessary wastage by providing timely alerts and a centralized digital inventory.
 
-Workflow Diagram
+> **Simply put:**  
+> Scan → Track → Get reminded → Stay safe.
 
-Project Structure
+---
 
-Setup & Installation
+## ❌ The Problem
 
-API Usage
+Expiry management today is mostly manual and inefficient:
 
-Future Scope
+- ⏳ People forget expiry dates
+- 🗑️ Food and medicines get wasted
+- ⚠️ Health risks due to expired consumption
+- 📄 No centralized digital tracking
+- 😕 Manual checking is time-consuming
 
-🔍 Overview
+---
 
-Managing expiry dates manually often leads to forgotten food items, expired medicines, and unnecessary waste.
-This project solves that problem by digitizing expiry tracking through a backend-first, scalable architecture.
+## ✅ Our Solution
 
-The system allows users to:
+**Digital Expiry Tracker provides:**
 
-Store product expiry data
+1. 📷 **OCR-Based Scanning** – Extract expiry dates from images  
+2. 📦 **Digital Inventory** – Manage all products in one place  
+3. ⏰ **Automated Reminders** – Alerts before items expire  
+4. 📊 **Expiry Dashboard** – Upcoming & expired item tracking  
+5. 🔐 **Reliable Backend APIs** – Secure and validated data handling  
 
-Extract expiry dates from images (OCR)
+---
 
-Receive alerts before expiration
+## 🧠 How OCR Works
 
-✨ Features
+1. User uploads product image  
+2. Image is preprocessed (resize, grayscale)  
+3. OCR engine extracts text  
+4. Expiry date is detected using pattern matching  
+5. Date is stored in database  
 
-OCR-based expiry date extraction
+> OCR integration is designed to be **modular and scalable**.
 
-Product CRUD APIs
+---
 
-Expiry monitoring logic
+## 🔄 How It Works (User Journey)
 
-Input validation & error handling
+Add Product (Image / Manual Entry)
+↓
 
-API documentation with Swagger
+OCR extracts expiry date
+↓
 
-Scalable backend architecture
+Backend validates data
+↓
 
-🛠 Tech Stack
+Product stored in database
+↓
 
-Backend
+System monitors expiry timeline
+↓
 
-Python
+User receives reminder before expiry
 
-FastAPI
 
-Uvicorn
+---
 
-Pydantic
+## 🎯 Core Features
 
-OCR (Planned)
+### 👤 For Users
+- ✅ Add food & medicine items
+- ✅ OCR-based expiry detection
+- ✅ Expiry countdown tracking
+- ✅ Reminder notifications
+- ✅ Simple & clean interface
 
-Tesseract OCR
+### 🛠️ For System
+- ✅ Product CRUD APIs
+- ✅ Input validation
+- ✅ Error handling
+- ✅ Scalable architecture
 
-OpenCV
+---
 
-Database
+## 🧱 Technology Stack
 
-SQLite (development)
+| Component | Technology |
+|---------|-----------|
+| Backend | FastAPI (Python) |
+| OCR | Tesseract OCR |
+| Image Processing | OpenCV |
+| Database | SQLite / PostgreSQL |
+| API Docs | Swagger (FastAPI) |
+| Tools | Git, GitHub, Thunder Client |
 
-PostgreSQL (production)
+---
 
-Tools
+## 📂 Project Structure
 
-Git & GitHub
-
-Thunder Client (VS Code)
-
-🔄 Workflow Diagram
-
-This diagram will render automatically on GitHub (no images required).
-
-flowchart TD
-    A[User] --> B[Frontend / API Client]
-    B --> C[Image Upload / Manual Entry]
-    C --> D[OCR Engine]
-    D --> E[Expiry Date Extraction]
-    E --> F[FastAPI Backend]
-    F --> G[Database]
-    G --> H[Expiry Monitoring Service]
-    H --> I[User Notification]
-
-📂 Project Structure
 digital-expiry-tracker/
 │
 ├── backend/
-│   ├── main.py
-│   ├── routers/
-│   ├── models/
-│   ├── schemas/
-│   ├── services/
-│   └── requirements.txt
+│ ├── main.py
+│ ├── routers/
+│ ├── models/
+│ ├── schemas/
+│ ├── services/
+│ └── requirements.txt
 │
 ├── docs/
-│   └── workflow.md
+│ └── workflow.md
 │
 ├── README.md
 └── .gitignore
 
-▶️ Setup & Installation
-Clone Repository
+
+---
+
+## ▶️ Setup & Installation
+
+### 1️⃣ Clone Repository
+```bash
 git clone https://github.com/your-username/digital-expiry-tracker.git
 cd digital-expiry-tracker
 
-Create Virtual Environment
+2️⃣ Create Virtual Environment
 python -m venv venv
 venv\Scripts\activate   # Windows
 
-Install Dependencies
+3️⃣ Install Dependencies
 pip install -r backend/requirements.txt
 
-Run Server
+4️⃣ Run Backend Server
 uvicorn backend.main:app --reload
 
-API Docs
+5️⃣ Open API Docs
 http://127.0.0.1:8000/docs
 
-🔌 API Usage
-
-Example endpoints:
-
+API Endpoints
 GET    /products
 POST   /products
 PUT    /products/{id}
 DELETE /products/{id}
-
 
 Test using:
 
@@ -142,19 +156,47 @@ Thunder Client (VS Code)
 
 Postman
 
-🚀 Future Scope
+| Metric          | Before  | After     |
+| --------------- | ------- | --------- |
+| Expiry Tracking | Manual  | Automated |
+| Food Wastage    | High    | Reduced   |
+| Health Risk     | Present | Minimized |
+| User Effort     | High    | Low       |
 
-Email & push notifications
+🚀 Future Enhancements
+Short Term
 
-Mobile app integration
+📧 Email reminders
 
-AI-based expiry prediction
+📱 Mobile-friendly UI
 
-Consumption analytics
+Medium Term
 
-Cloud deployment
+🔔 Push notifications
 
-👤 Author
+📈 Consumption analytics
+
+Long Term
+
+🤖 AI-based expiry prediction
+
+☁️ Cloud deployment
+
+🧠 Smart shopping suggestions
+
+🏆 Why This Project Stands Out
+
+✅ Real-world problem solving
+
+✅ OCR + Backend integration
+
+✅ Clean API architecture
+
+✅ Suitable for hackathons & academics
+
+✅ Scalable for production use
+
+👨‍💻 Author
 
 Harshil Thakkar
 B.Tech – Artificial Intelligence & Machine Learning
@@ -163,6 +205,8 @@ B.Tech – Artificial Intelligence & Machine Learning
 
 If you like this project:
 
-Star ⭐ the repository
+⭐ Star the repository
 
-Fork 🍴 and contribute
+🍴 Fork it
+
+🧠 Share feedback
