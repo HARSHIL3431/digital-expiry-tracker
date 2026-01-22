@@ -210,3 +210,6 @@ If you like this project:
 🍴 Fork it
 
 🧠 Share feedback
+
+## CodeRabbit Integration
+This change is made to test CodeRabbit AI code review.
