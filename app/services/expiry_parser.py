@@ -1,16 +1,19 @@
 import re
 from datetime import datetime, date
 from typing import Optional
+import calendar
 
 
 class ExpiryParser:
     """
     Extract expiry date from OCR text.
+    Handles noisy real-world formats.
     """
 
     DATE_PATTERNS = [
-        r"\b(\d{2}[/-]\d{2}[/-]\d{4})\b",   # 10/06/2025
-        r"\b(\d{2}[/-]\d{2}[/-]\d{2})\b",   # 10/06/25
+        r"\b(\d{2}[/-]\d{2}[/-]\d{4})\b",   # DD/MM/YYYY
+        r"\b(\d{2}[/-]\d{2}[/-]\d{2})\b",   # DD/MM/YY
+        r"\b(\d{2}[/-]\d{4})\b",            # MM/YYYY
         r"\b([A-Za-z]{3,9}\s+\d{4})\b",     # Aug 2025
     ]
 
@@ -47,23 +50,40 @@ class ExpiryParser:
         # DD/MM/YYYY or DD-MM-YYYY
         try:
             if len(raw) == 10:
-                return datetime.strptime(raw.replace("-", "/"), "%d/%m/%Y").date()
+                return datetime.strptime(
+                    raw.replace("-", "/"), "%d/%m/%Y"
+                ).date()
         except ValueError:
             pass
 
         # DD/MM/YY
         try:
             if len(raw) == 8:
-                return datetime.strptime(raw.replace("-", "/"), "%d/%m/%y").date()
+                return datetime.strptime(
+                    raw.replace("-", "/"), "%d/%m/%y"
+                ).date()
         except ValueError:
             pass
 
-        # Month YYYY
+        # MM/YYYY (common in medicine strips)
+        try:
+            if len(raw) == 7:
+                dt = datetime.strptime(raw.replace("-", "/"), "%m/%Y")
+                last_day = calendar.monthrange(dt.year, dt.month)[1]
+                return date(dt.year, dt.month, last_day)
+        except ValueError:
+            pass
+
+        # Month YYYY (Aug 2025)
         parts = raw.split()
         if len(parts) == 2:
             month = self.MONTH_MAP.get(parts[0])
-            year = int(parts[1])
-            if month:
-                return date(year, month, 1)
+            try:
+                year = int(parts[1])
+                if month:
+                    last_day = calendar.monthrange(year, month)[1]
+                    return date(year, month, last_day)
+            except ValueError:
+                pass
 
         return None
