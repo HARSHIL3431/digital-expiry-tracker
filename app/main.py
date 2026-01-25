@@ -1,13 +1,17 @@
 from fastapi import FastAPI
-from app.database import engine
+
+from app.utils.database import init_db
 from app import models
 from app.api.v1 import products, scan
 
 app = FastAPI(title="Digital Expiry Tracker")
 
-models.Base.metadata.create_all(bind=engine)
+# 🔹 Run DB initialization ONCE at startup
+@app.on_event("startup")
+def on_startup():
+    init_db()
 
-# API v1 routes
+# 🔹 API v1 routes
 app.include_router(products.router, prefix="/api/v1", tags=["Products"])
 app.include_router(scan.router, prefix="/api/v1", tags=["OCR"])
 

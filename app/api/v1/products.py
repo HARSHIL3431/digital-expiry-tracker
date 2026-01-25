@@ -1,7 +1,8 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
-from app import models, database
+from app import models
+from app.utils.database import SessionLocal, engine
 from app.schemas.product import ProductCreate
 from app.services.expiry_service import get_expiry_status
 
