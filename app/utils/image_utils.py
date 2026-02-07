@@ -6,8 +6,12 @@ def preprocess_image(image_path: str):
     if image is None:
         raise ValueError(f"Invalid image path: {image_path}")
 
-    # Convert to grayscale
-    gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+    height, width, _ = image.shape
+
+    # 🔑 Crop bottom 35% where expiry dates usually exist
+    cropped = image[int(height * 0.65):height, 0:width]
+
+    gray = cv2.cvtColor(cropped, cv2.COLOR_BGR2GRAY)
 
     gray = cv2.resize(
         gray, None, fx=2.5, fy=2.5, interpolation=cv2.INTER_CUBIC
