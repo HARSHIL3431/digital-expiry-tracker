@@ -7,6 +7,7 @@ class ScanResult(Base):
     __tablename__ = "scan_results"
 
     id = Column(Integer, primary_key=True, index=True)
+    image_name = Column(String, nullable=True)
     expiry_date = Column(Date, nullable=False)
     days_left = Column(Integer, nullable=False)
     status = Column(String, nullable=False)
