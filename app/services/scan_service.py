@@ -1,5 +1,6 @@
 from typing import Dict, Any
 from datetime import date
+from sqlalchemy.exc import SQLAlchemyError
 
 from app.services.ocr_service import OCRService
 from app.services.expiry_service import ExpiryService, get_expiry_status
@@ -22,8 +23,9 @@ class ScanService:
         self.inventory_service = InventoryService()
 
     def scan_image(self, image_path: str) -> Dict[str, Any]:
+
         # ---------------- 1️⃣ OCR ---------------- #
-        ocr_texts = self.ocr_service.enhanced_extract_text(image_path)
+        ocr_texts = self.ocr_service.enhanced_extract_text(image_path) or []
 
         # ---------------- 2️⃣ EXPIRY INTELLIGENCE ---------------- #
         expiry_candidates = []
@@ -34,7 +36,7 @@ class ScanService:
                 expiry_candidates.append({
                     "raw": text,
                     "normalized": parsed_date.isoformat(),
-                    "confidence": 0.8,          # base confidence
+                    "confidence": 0.8,   # placeholder confidence
                     "source": "parser"
                 })
 
@@ -46,32 +48,41 @@ class ScanService:
         status = None
 
         if suggested_expiry:
-            expiry_date = date.fromisoformat(suggested_expiry["normalized"])
-            status_info = get_expiry_status(expiry_date)
-            days_left = status_info["days_left"]
-            status = status_info["status"]
+            try:
+                expiry_date = date.fromisoformat(suggested_expiry["normalized"])
+                status_info = get_expiry_status(expiry_date)
+                days_left = status_info["days_left"]
+                status = status_info["status"]
+            except Exception:
+                expiry_date = None
+                days_left = None
+                status = None
 
         # ---------------- 3️⃣ INVENTORY SUGGESTIONS ---------------- #
         prefix = max(ocr_texts, key=len, default="")
         product_suggestions = self.inventory_service.suggest_products(prefix)
 
-        # ---------------- 4️⃣ DB SAVE ---------------- #
-        db = SessionLocal()
-        try:
-            scan_record = ScanResult(
-                expiry_date=expiry_date,
-                days_left=days_left,
-                status=status,
-                extracted_text=" ".join(ocr_texts) if ocr_texts else None,
-            )
-            db.add(scan_record)
-            db.commit()
-        finally:
-            db.close()
+        # ---------------- 4️⃣ SAFE DB SAVE ---------------- #
+        if expiry_date:
+            db = SessionLocal()
+            try:
+                scan_record = ScanResult(
+                    expiry_date=expiry_date,
+                    days_left=days_left,
+                    status=status,
+                    extracted_text=" ".join(ocr_texts) if ocr_texts else None,
+                )
+                db.add(scan_record)
+                db.commit()
+            except SQLAlchemyError:
+                db.rollback()
+            finally:
+                db.close()
 
         # ---------------- 5️⃣ RESPONSE ---------------- #
         return {
-            "success": True if expiry_date else False,
+            "success": bool(expiry_date),
+            "message": "Expiry detected" if expiry_date else "Expiry date not detected",
             "ocr_text": ocr_texts,
             "expiry": expiry_result,
             "product_suggestions": product_suggestions,

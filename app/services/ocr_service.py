@@ -1,48 +1,53 @@
-import pytesseract
 import cv2
-import numpy as np
+import pytesseract
 
 from app.services.ocr_preprocess import OCRPreprocess
 from app.services.ocr_easyocr import EasyOCRDetector
 from app.services.ocr_tesseract import TesseractRecognizer
+from app.services.expiry_parser import ExpiryParser
 
 
 class OCRService:
     """
-    OCR Service
-    - extract_text(): legacy OCR (Tesseract only)
-    - enhanced_extract_text(): v2 OCR (Preprocess + EasyOCR + Tesseract)
+    Adaptive OCR Service
+
+    Strategy:
+    1️⃣ Try full image Tesseract first
+    2️⃣ If expiry detected → return
+    3️⃣ Else → use EasyOCR detection + Tesseract recognition
     """
 
-    def extract_text(self, image_path: str) -> str:
-        """
-        Legacy OCR method (DO NOT REMOVE)
-        """
+    def __init__(self):
+        self.expiry_parser = ExpiryParser()
+
+    # ---------------- FULL IMAGE TESSERACT ---------------- #
+
+    def _full_image_tesseract(self, image_path: str):
         image = cv2.imread(image_path)
 
-        gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+        if image is None:
+            return []
 
-        _, thresh = cv2.threshold(
-            gray, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU
-        )
-
-        custom_config = r"--oem 3 --psm 6"
+        config = "--oem 3 --psm 6"
 
         text = pytesseract.image_to_string(
-            thresh,
-            config=custom_config,
+            image,
+            config=config,
             lang="eng"
         )
 
-        return text.strip()
+        text = text.strip()
 
-    def enhanced_extract_text(self, image_path: str):
-        """
-        Enhanced OCR pipeline (v2)
-        Preprocessing → EasyOCR detection → Tesseract recognition
-        """
+        if text:
+            return [text]
 
+        return []
+
+    # ---------------- EASYOCR + CROP PIPELINE ---------------- #
+
+    def _easyocr_pipeline(self, image_path: str):
         processed = OCRPreprocess.preprocess(image_path)
+
         detector = EasyOCRDetector()
         boxes = detector.detect(processed)
 
@@ -50,6 +55,7 @@ class OCRService:
 
         for box in boxes:
             (tl, tr, br, bl) = box["bbox"]
+
             x1, y1 = int(tl[0]), int(tl[1])
             x2, y2 = int(br[0]), int(br[1])
 
@@ -59,7 +65,31 @@ class OCRService:
                 continue
 
             text = TesseractRecognizer.recognize(crop)
+
             if text:
                 extracted_text.append(text)
 
         return extracted_text
+
+    # ---------------- MAIN ENTRY ---------------- #
+
+    def enhanced_extract_text(self, image_path: str):
+        """
+        Adaptive OCR execution.
+        """
+
+        # Step 1️⃣ Try full image Tesseract
+        tesseract_texts = self._full_image_tesseract(image_path)
+
+        # Check if expiry detected
+        for text in tesseract_texts:
+            if self.expiry_parser.extract_expiry_date(text):
+                print("✅ Expiry detected via Full Image Tesseract")
+                return tesseract_texts
+
+        # Step 2️⃣ Fallback to EasyOCR pipeline
+        print("⚠ Full Image Tesseract failed → Switching to EasyOCR pipeline")
+
+        easy_texts = self._easyocr_pipeline(image_path)
+
+        return easy_texts

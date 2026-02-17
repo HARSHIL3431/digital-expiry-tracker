@@ -139,7 +139,8 @@ venv\Scripts\activate   # Windows
 pip install -r backend/requirements.txt
 
 4️⃣ Run Backend Server
-uvicorn backend.main:app --reload
+uvicorn backend.main:app --reload or
+python -m uvicorn app.main:app --reload
 
 5️⃣ Open API Docs
 http://127.0.0.1:8000/docs
