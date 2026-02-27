@@ -2,43 +2,69 @@ from fastapi import FastAPI
 from contextlib import asynccontextmanager
 
 from app.utils.database import init_db
-from app import models
+from app import models  # Important: ensures models are registered
 from app.api.v1 import products, scan
+from app.api.v1 import auth
 
-
-# ✅ Recommended modern startup method (instead of @on_event)
+# ✅ Modern startup lifecycle
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # Startup
     print("🚀 Starting Digital Expiry Tracker...")
+    
+    # Initialize database (creates tables if not exist)
     init_db()
+    
+    print("✅ Database initialized successfully.")
+    
     yield
+    
     # Shutdown
-    print("🛑 Shutting down...")
+    print("🛑 Shutting down Digital Expiry Tracker...")
 
 
 app = FastAPI(
     title="Digital Expiry Tracker",
-    version="1.0.0",
+    description="AI-powered expiry detection and tracking system",
+    version="1.1.0",
     lifespan=lifespan
 )
 
-# 🔹 API v1 routes
-app.include_router(products.router, prefix="/api/v1/products", tags=["Products"])
-app.include_router(scan.router, prefix="/api/v1/scan", tags=["OCR"])
 
+# ------------------ ROUTERS ------------------
 
-# ✅ Root route (fixes your 404 issue)
-@app.get("/")
+app.include_router(
+    products.router,
+    prefix="/api/v1/products",
+    tags=["Products"]
+)
+
+app.include_router(
+    scan.router,
+    prefix="/api/v1/scan",
+    tags=["OCR"]
+)
+
+app.include_router(
+    auth.router,
+    prefix="/api/v1/auth",
+    tags=["Authentication"]
+)
+# ------------------ ROOT ROUTES ------------------
+
+@app.get("/", tags=["Root"])
 def root():
     return {
         "message": "Digital Expiry Tracker API is running 🚀",
         "docs": "/docs",
-        "version": "v1"
+        "version": "v1.1.0"
     }
 
 
-# ✅ Test route
-@app.get("/api/test")
+@app.get("/api/test", tags=["Test"])
 def test():
-    return {"status": "API working"}
+    return {
+        "status": "API working",
+        "database": "Connected",
+        "modules": ["Products", "OCR"]
+    }
