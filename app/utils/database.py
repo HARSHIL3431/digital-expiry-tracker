@@ -5,7 +5,7 @@ DATABASE_URL = "sqlite:///./expiry_tracker.db"
 
 engine = create_engine(
     DATABASE_URL,
-    connect_args={"check_same_thread": False}  # required for SQLite
+    connect_args={"check_same_thread": False}
 )
 
 SessionLocal = sessionmaker(
@@ -17,8 +17,15 @@ SessionLocal = sessionmaker(
 Base = declarative_base()
 
 
+# ✅ Dependency for DB session (IMPORTANT)
+def get_db():
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
+
+
+# ✅ Called during startup
 def init_db():
-    """
-    Create all tables in the database.
-    """
     Base.metadata.create_all(bind=engine)

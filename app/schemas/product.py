@@ -1,11 +1,12 @@
 from pydantic import BaseModel
 from datetime import date
-from typing import Optional
 
 
 class ProductBase(BaseModel):
-    name: str
+    product_name: str
+    manufacture_date: date
     expiry_date: date
+    price: float
 
 
 class ProductCreate(ProductBase):
@@ -14,7 +15,7 @@ class ProductCreate(ProductBase):
 
 class ProductResponse(ProductBase):
     id: int
-    is_expired: bool
+    created_at: date
 
     class Config:
         from_attributes = True

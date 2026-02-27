@@ -2,37 +2,70 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
 from app import models
-from app.utils.database import SessionLocal, engine
+from app.utils.database import get_db
 from app.schemas.product import ProductCreate
 from app.services.expiry_service import get_expiry_status
+from app.core.dependencies import get_current_user
 
-# ✅ router MUST be defined before decorators
-router = APIRouter(prefix="/products", tags=["Products"])
+# ✅ Removed prefix here (IMPORTANT)
+router = APIRouter(tags=["Products"])
 
 
-def get_db():
-    db = database.SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
-
+# ==============================
+# ➕ CREATE PRODUCT
+# ==============================
 
 @router.post("/")
-def create_product(product: ProductCreate, db: Session = Depends(get_db)):
+def create_product(
+    product: ProductCreate,
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(get_current_user)
+):
+    subscription = db.query(models.Subscription).filter(
+        models.Subscription.user_id == current_user.id
+    ).first()
+
+    if not subscription:
+        raise HTTPException(status_code=400, detail="Subscription not found")
+
+    product_count = db.query(models.Product).filter(
+        models.Product.user_id == current_user.id
+    ).count()
+
+    if subscription.plan_type == "free" and product_count >= 5:
+        raise HTTPException(
+            status_code=403,
+            detail="Free plan limit reached. Upgrade to PRO."
+        )
+
     if product.price < 0:
         raise HTTPException(status_code=400, detail="Price cannot be negative")
 
-    db_product = models.Product(**product.model_dump())
+    db_product = models.Product(
+        **product.model_dump(),
+        user_id=current_user.id
+    )
+
     db.add(db_product)
     db.commit()
     db.refresh(db_product)
+
     return db_product
 
 
+# ==============================
+# 📋 GET PRODUCTS
+# ==============================
+
 @router.get("/")
-def get_products(db: Session = Depends(get_db)):
-    products = db.query(models.Product).all()
+def get_products(
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(get_current_user)
+):
+    products = db.query(models.Product).filter(
+        models.Product.user_id == current_user.id
+    ).all()
+
     response = []
 
     for product in products:
@@ -52,20 +85,42 @@ def get_products(db: Session = Depends(get_db)):
     return response
 
 
+# ==============================
+# ❌ DELETE PRODUCT
+# ==============================
+
 @router.delete("/{product_id}")
-def delete_product(product_id: int, db: Session = Depends(get_db)):
-    product = db.query(models.Product).filter(models.Product.id == product_id).first()
+def delete_product(
+    product_id: int,
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(get_current_user)
+):
+    product = db.query(models.Product).filter(
+        models.Product.id == product_id,
+        models.Product.user_id == current_user.id
+    ).first()
+
     if not product:
         raise HTTPException(status_code=404, detail="Product not found")
 
     db.delete(product)
     db.commit()
+
     return {"message": "Product deleted"}
 
 
+# ==============================
+# 📊 GROUP BY EXPIRY STATUS
+# ==============================
+
 @router.get("/expiry-status")
-def get_products_by_expiry_status(db: Session = Depends(get_db)):
-    products = db.query(models.Product).all()
+def get_products_by_expiry_status(
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(get_current_user)
+):
+    products = db.query(models.Product).filter(
+        models.Product.user_id == current_user.id
+    ).all()
 
     grouped = {
         "expired": [],
