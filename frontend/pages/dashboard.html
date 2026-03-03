@@ -1,0 +1,1295 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Digital Expiry Tracker | Operations Center</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            /* Palette Requirements: Charcoal (#0F172A), Graphite (#1E293B), Sharp Cyan (#06B6D4) */
+            --bg-master: #0F172A;
+            --bg-panel: #1E293B;
+            --bg-panel-hover: #334155;
+            --accent: #06B6D4;
+            --accent-hover: #0891B2;
+            --text-main: #F8FAFC;
+            --text-muted: #94A3B8;
+            --border: #334155;
+
+            --risk-low: #10B981;
+            --risk-med: #F59E0B;
+            --risk-high: #EF4444;
+
+            --radius: 4px;
+            /* Strict constraint: max 6px */
+            --transition: all 0.2s ease;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+            letter-spacing: -0.01em;
+        }
+
+        body {
+            background-color: var(--bg-master);
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            overflow-x: hidden;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* Layout Structure */
+        .app-layout {
+            display: flex;
+            width: 100%;
+            height: 100vh;
+        }
+
+        /* Left Sidebar */
+        .sidebar {
+            width: 240px;
+            background-color: var(--bg-panel);
+            border-right: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            flex-shrink: 0;
+        }
+
+        .brand {
+            height: 60px;
+            display: flex;
+            align-items: center;
+            padding: 0 1.25rem;
+            border-bottom: 1px solid var(--border);
+            font-weight: 700;
+            font-size: 1.1rem;
+            color: var(--text-main);
+            gap: 8px;
+        }
+
+        .brand-icon {
+            width: 16px;
+            height: 16px;
+            background-color: var(--accent);
+            border-radius: 2px;
+        }
+
+        .nav-menu {
+            padding: 1.5rem 0.75rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+            flex-grow: 1;
+        }
+
+        .nav-item {
+            padding: 0.6rem 0.75rem;
+            border-radius: var(--radius);
+            color: var(--text-muted);
+            font-size: 0.85rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            text-decoration: none;
+        }
+
+        .nav-item:hover {
+            background-color: var(--bg-panel-hover);
+            color: var(--text-main);
+        }
+
+        .nav-item.active {
+            background-color: rgba(6, 182, 212, 0.1);
+            color: var(--accent);
+            border-left: 3px solid var(--accent);
+            border-radius: 0 var(--radius) var(--radius) 0;
+        }
+
+        .user-profile {
+            padding: 1rem;
+            border-top: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 0.85rem;
+        }
+
+        .avatar {
+            width: 32px;
+            height: 32px;
+            background-color: var(--bg-panel-hover);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            color: var(--accent);
+            border: 1px solid var(--border);
+        }
+
+        /* Main Content wrapper */
+        .main-wrapper {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+            position: relative;
+            /* 3D isolation context */
+        }
+
+        /* Top Header */
+        .header {
+            height: 60px;
+            background-color: var(--bg-master);
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 2rem;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        .header-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+        }
+
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+        }
+
+        .role-badge {
+            font-size: 0.75rem;
+            padding: 2px 8px;
+            background-color: var(--bg-panel);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .notification {
+            position: relative;
+            cursor: pointer;
+            color: var(--text-muted);
+            display: flex;
+            align-items: center;
+        }
+
+        .notification:hover {
+            color: var(--text-main);
+        }
+
+        .notification-badge {
+            position: absolute;
+            top: -4px;
+            right: -6px;
+            background-color: var(--risk-high);
+            color: white;
+            font-size: 0.65rem;
+            font-weight: 700;
+            width: 16px;
+            height: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            border: 2px solid var(--bg-master);
+        }
+
+        .notification-dropdown {
+            position: absolute;
+            top: 30px;
+            right: -10px;
+            width: 320px;
+            background-color: var(--bg-panel);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+            display: none;
+            flex-direction: column;
+            z-index: 100;
+        }
+
+        .notification-dropdown.show {
+            display: flex;
+        }
+
+        .dropdown-header {
+            padding: 0.75rem 1rem;
+            border-bottom: 1px solid var(--border);
+            font-size: 0.85rem;
+            font-weight: 600;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .dropdown-item {
+            padding: 0.75rem 1rem;
+            border-bottom: 1px solid var(--border);
+            font-size: 0.8rem;
+            transition: var(--transition);
+            cursor: pointer;
+        }
+
+        .dropdown-item:hover {
+            background-color: var(--bg-panel-hover);
+        }
+
+        .dropdown-item:last-child {
+            border-bottom: none;
+        }
+
+        /* Content Area */
+        .content {
+            padding: 2rem;
+            display: none;
+            /* JS will toggle visibility */
+            position: relative;
+        }
+
+        .content.active {
+            display: block;
+        }
+
+        /* Typography & Globals */
+        h2 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 1.5rem;
+        }
+
+        h3 {
+            font-size: 1.1rem;
+            font-weight: 500;
+            margin-bottom: 1rem;
+        }
+
+        .btn {
+            background-color: var(--bg-panel);
+            color: var(--text-main);
+            border: 1px solid var(--border);
+            padding: 0.5rem 1rem;
+            border-radius: var(--radius);
+            font-size: 0.85rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: var(--transition);
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn:hover:not(:disabled) {
+            background-color: var(--bg-panel-hover);
+            border-color: var(--text-muted);
+        }
+
+        .btn-primary {
+            background-color: var(--accent);
+            color: #000;
+            border-color: var(--accent);
+            font-weight: 600;
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            background-color: var(--accent-hover);
+            border-color: var(--accent-hover);
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .card {
+            background-color: var(--bg-panel);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 1.5rem;
+            position: relative;
+        }
+
+        /* ----------------------- DASHBOARD PAGE ----------------------- */
+        .kpi-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .kpi-card {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .kpi-title {
+            color: var(--text-muted);
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            font-weight: 600;
+            letter-spacing: 0.05em;
+        }
+
+        .kpi-value {
+            font-size: 2.2rem;
+            font-weight: 600;
+        }
+
+        .kpi-sub {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .kpi-sub.positive {
+            color: var(--risk-low);
+        }
+
+        .kpi-sub.negative {
+            color: var(--risk-high);
+        }
+
+        .dashboard-main-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 1.5rem;
+        }
+
+        .chart-placeholder {
+            width: 100%;
+            height: 250px;
+            background: repeating-linear-gradient(45deg,
+                    var(--bg-master),
+                    var(--bg-master) 10px,
+                    transparent 10px,
+                    transparent 20px);
+            border: 1px dashed var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-muted);
+            font-family: monospace;
+            font-size: 0.85rem;
+        }
+
+        .alert-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .alert-item {
+            padding: 1rem;
+            background-color: rgba(0, 0, 0, 0.2);
+            border-left: 3px solid var(--accent);
+            border-radius: 0 var(--radius) var(--radius) 0;
+            font-size: 0.85rem;
+        }
+
+        .alert-item.high {
+            border-left-color: var(--risk-high);
+        }
+
+        .alert-item.warn {
+            border-left-color: var(--risk-med);
+        }
+
+        /* ----------------------- PRODUCT MGMT ----------------------- */
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .table-container {
+            width: 100%;
+            overflow-x: auto;
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            background-color: var(--bg-panel);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.85rem;
+        }
+
+        th {
+            text-align: left;
+            padding: 1rem;
+            background-color: rgba(0, 0, 0, 0.2);
+            color: var(--text-muted);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            font-size: 0.75rem;
+            border-bottom: 1px solid var(--border);
+        }
+
+        td {
+            padding: 1rem;
+            border-bottom: 1px solid var(--border);
+            vertical-align: middle;
+        }
+
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        tr:hover td {
+            background-color: var(--bg-panel-hover);
+        }
+
+        .tag {
+            padding: 2px 8px;
+            border-radius: var(--radius);
+            font-size: 0.7rem;
+            font-weight: 600;
+            background: var(--bg-master);
+            border: 1px solid var(--border);
+        }
+
+        .risk-dot {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            margin-right: 6px;
+        }
+
+        .bg-low {
+            background-color: var(--risk-low);
+        }
+
+        .bg-med {
+            background-color: var(--risk-med);
+        }
+
+        .bg-high {
+            background-color: var(--risk-high);
+        }
+
+        .action-flex {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        /* Modal */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(15, 23, 42, 0.8);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal {
+            background-color: var(--bg-panel);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            width: 100%;
+            max-width: 480px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6);
+        }
+
+        .modal-header {
+            padding: 1.25rem 1.5rem;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: 600;
+        }
+
+        .modal-body {
+            padding: 1.5rem;
+        }
+
+        .modal-footer {
+            padding: 1.25rem 1.5rem;
+            border-top: 1px solid var(--border);
+            display: flex;
+            justify-content: flex-end;
+            gap: 1rem;
+            background-color: rgba(0, 0, 0, 0.1);
+        }
+
+        .form-group {
+            margin-bottom: 1rem;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            margin-bottom: 0.4rem;
+        }
+
+        .form-control {
+            width: 100%;
+            background-color: var(--bg-master);
+            border: 1px solid var(--border);
+            color: var(--text-main);
+            padding: 0.6rem 0.8rem;
+            border-radius: var(--radius);
+            font-size: 0.85rem;
+            transition: var(--transition);
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: var(--accent);
+        }
+
+        /* ----------------------- AI INTELLIGENCE ----------------------- */
+        .ai-grid {
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            gap: 1.5rem;
+        }
+
+        .ai-panel {
+            background: linear-gradient(180deg, var(--bg-panel) 0%, rgba(30, 41, 59, 0.5) 100%);
+            border: 1px solid var(--border);
+            border-top: 2px solid var(--accent);
+        }
+
+        .ai-metric {
+            margin-top: 1.5rem;
+            padding-top: 1.5rem;
+            border-top: 1px dashed var(--border);
+        }
+
+        .ai-metric-val {
+            font-family: monospace;
+            font-size: 1.5rem;
+            color: var(--accent);
+        }
+
+        .code-block {
+            background-color: var(--bg-master);
+            padding: 1rem;
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            font-family: monospace;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            white-space: pre-wrap;
+        }
+
+        /* ----------------------- SETTINGS / ALERTS ----------------------- */
+        .settings-list {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .setting-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .setting-info h4 {
+            font-size: 0.95rem;
+            font-weight: 500;
+            margin-bottom: 4px;
+        }
+
+        .setting-info p {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+
+        /* Toggle Switch */
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 44px;
+            height: 24px;
+        }
+
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: var(--bg-master);
+            border: 1px solid var(--border);
+            transition: .4s;
+            border-radius: 24px;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 16px;
+            width: 16px;
+            left: 3px;
+            bottom: 3px;
+            background-color: var(--text-muted);
+            transition: .4s;
+            border-radius: 50%;
+        }
+
+        input:checked+.slider {
+            background-color: var(--accent);
+            border-color: var(--accent);
+        }
+
+        input:checked+.slider:before {
+            transform: translateX(20px);
+            background-color: #000;
+        }
+
+        input:disabled+.slider {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        /* Hide elements based on role */
+        .role-viewer .req-manager,
+        .role-viewer .req-admin {
+            display: none !important;
+        }
+
+        .role-manager .req-admin {
+            display: none !important;
+        }
+    </style>
+</head>
+
+<body class="role-admin" id="appBody">
+
+    <!-- 3D MOUNT ZONE - DASHBOARD HEADER -->
+
+    <div class="app-layout">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="brand">
+                <div class="brand-icon"></div>
+                OpeX Tracker
+            </div>
+
+            <div class="nav-menu">
+                <div
+                    style="font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase; font-weight: 600; padding: 0.5rem 0.75rem; margin-top: 0.5rem;">
+                    Core Systems</div>
+
+                <a href="#" class="nav-item active" onclick="switchView('dashboard', this)">
+                    <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z">
+                        </path>
+                    </svg>
+                    Dashboard
+                </a>
+                <a href="#" class="nav-item" onclick="switchView('products', this)">
+                    <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path>
+                    </svg>
+                    Product Engine
+                </a>
+                <a href="#" class="nav-item" onclick="switchView('ai', this)">
+                    <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z">
+                        </path>
+                    </svg>
+                    AI Intelligence
+                </a>
+                <a href="#" class="nav-item" onclick="switchView('analytics', this)">
+                    <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z">
+                        </path>
+                    </svg>
+                    Analytics
+                </a>
+
+                <div
+                    style="font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase; font-weight: 600; padding: 0.5rem 0.75rem; margin-top: 1rem;">
+                    Settings</div>
+                <a href="#" class="nav-item" onclick="switchView('alerts', this)">
+                    <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9">
+                        </path>
+                    </svg>
+                    Alert Routing
+                </a>
+            </div>
+
+            <div class="user-profile">
+                <div class="avatar">J</div>
+                <div style="flex-grow: 1;">
+                    <div style="font-weight: 600; color: var(--text-main);">John Doe</div>
+                    <div style="color: var(--text-muted); font-size: 0.75rem; margin-top: 2px;">Simulator Admin</div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Workspace -->
+        <main class="main-wrapper">
+            <!-- 3D MOUNT ZONE - ANALYTICS BACKGROUND -->
+
+            <header class="header">
+                <div class="header-title" id="headerTitle">Dashboard / Overview</div>
+
+                <div class="header-actions">
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <span style="font-size: 0.75rem; color: var(--text-muted);">Simulated Role:</span>
+                        <select id="roleSelector" class="form-control"
+                            style="width: auto; padding: 0.4rem; height: auto;" onchange="updateRole()">
+                            <option value="admin">Administrator</option>
+                            <option value="manager">Manager</option>
+                            <option value="viewer">Viewer</option>
+                        </select>
+                    </div>
+
+                    <div class="notification" onclick="toggleNotifications()">
+                        <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9">
+                            </path>
+                        </svg>
+                        <div class="notification-badge" id="notifCount">3</div>
+
+                        <div class="notification-dropdown" id="notifDropdown">
+                            <div class="dropdown-header">
+                                <span>System Alerts</span>
+                                <span style="color: var(--accent); font-size: 0.75rem; cursor: pointer;">Mark all
+                                    read</span>
+                            </div>
+                            <div class="dropdown-item">
+                                <strong style="color: var(--risk-high); display: block; margin-bottom: 2px;">CRITICAL: 2
+                                    Items Expiring</strong>
+                                Action required for Industrial Dairy Batch A.
+                            </div>
+                            <div class="dropdown-item">
+                                <strong style="color: var(--risk-med); display: block; margin-bottom: 2px;">WARNING:
+                                    Risk Increased</strong>
+                                Algorithm detected 12% increase in waste likelihood.
+                            </div>
+                            <div class="dropdown-item">
+                                <strong style="color: var(--text-main); display: block; margin-bottom: 2px;">INFO:
+                                    System Sync</strong>
+                                Last ingestion completed at 04:00z.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+            <!-- VIEW 1: DASHBOARD -->
+            <section id="view-dashboard" class="content active">
+                <div class="kpi-grid">
+                    <div class="card kpi-card">
+                        <div class="kpi-title">Total Active Assets</div>
+                        <div class="kpi-value" id="kpiTotal">1,248</div>
+                        <div class="kpi-sub positive"><svg width="12" height="12" fill="none" stroke="currentColor"
+                                viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M5 10l7-7m0 0l7 7m-7-7v18"></path>
+                            </svg> 2.4% vs last week</div>
+                    </div>
+                    <div class="card kpi-card">
+                        <div class="kpi-title">Expiring < 7 Days</div>
+                                <div class="kpi-value" id="kpiExpiring" style="color: var(--risk-high);">12</div>
+                                <div class="kpi-sub negative"><svg width="12" height="12" fill="none"
+                                        stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M19 14l-7 7m0 0l-7-7m7 7V3"></path>
+                                    </svg> Requires action</div>
+                        </div>
+                        <div class="card kpi-card">
+                            <div class="kpi-title">High Risk Flags</div>
+                            <div class="kpi-value" id="kpiRisk">4</div>
+                            <div class="kpi-sub negative">AI detected anomalies</div>
+                        </div>
+                        <div class="card kpi-card">
+                            <div class="kpi-title">Est. Loss Value</div>
+                            <div class="kpi-value">$8.4K</div>
+                            <div class="kpi-sub">Predicted 30-day waste</div>
+                        </div>
+                    </div>
+
+                    <div class="dashboard-main-grid">
+                        <div class="card" style="padding: 1.5rem;">
+                            <h3>Asset Expiry Trend</h3>
+                            <div class="chart-placeholder">
+                                [ HTML Canvas / JS Chart Mount Point ]<br>
+                                Showing 30-day forward trajectory
+                            </div>
+                        </div>
+                        <div class="card alert-panel">
+                            <h3>Active Operations Alerts</h3>
+                            <div class="alert-item high">
+                                <strong>12 items expiring this week</strong>
+                                <div style="color: var(--text-muted); font-size: 0.75rem; margin-top: 4px;">Initiate
+                                    liquidation protocol.</div>
+                            </div>
+                            <div class="alert-item high">
+                                <strong>4 high-risk SKUs detected</strong>
+                                <div style="color: var(--text-muted); font-size: 0.75rem; margin-top: 4px;">Supply chain
+                                    delay probable.</div>
+                            </div>
+                            <div class="alert-item warn">
+                                <strong>Category: Perishables risk +12%</strong>
+                                <div style="color: var(--text-muted); font-size: 0.75rem; margin-top: 4px;">Historical
+                                    weather pattern correlation.</div>
+                            </div>
+                        </div>
+                    </div>
+            </section>
+
+            <!-- VIEW 2: PRODUCT MANAGEMENT -->
+            <section id="view-products" class="content">
+                <style>
+                    /* Scoped for products to ensure no layout bleed */
+                    #view-products {
+                        padding: 2rem;
+                    }
+                </style>
+                <div class="page-header">
+                    <h2>Asset Manifest</h2>
+                    <div class="action-flex req-manager">
+                        <button class="btn" onclick="alert('CSV Upload Simulator Triggered')">
+                            <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path>
+                            </svg>
+                            Ingest CSV
+                        </button>
+                        <button class="btn btn-primary" onclick="openModal()">
+                            <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M12 4v16m8-8H4"></path>
+                            </svg>
+                            Register Asset
+                        </button>
+                    </div>
+                </div>
+
+                <div class="table-container">
+                    <table id="productTable">
+                        <thead>
+                            <tr>
+                                <th>Item Code / Name</th>
+                                <th>Category</th>
+                                <th>Qty</th>
+                                <th>Expiry Target</th>
+                                <th>Risk Matrix</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="productTableBody">
+                            <!-- JS injected rows -->
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- VIEW 3: AI INTELLIGENCE -->
+            <section id="view-ai" class="content">
+                <h2>AI Risk Prediction Engine</h2>
+
+                <div class="ai-grid">
+                    <div class="card ai-panel">
+                        <h3 style="color: var(--accent); display: flex; align-items: center; gap: 8px;">
+                            <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                            </svg>
+                            Engine Status: Active
+                        </h3>
+                        <p style="font-size: 0.85rem; color: var(--text-muted);">Real-time probabilistic computing
+                            layer.</p>
+
+                        <div class="ai-metric">
+                            <div style="font-size: 0.8rem; text-transform: uppercase;">Confidence Score</div>
+                            <div class="ai-metric-val">94.2%</div>
+                        </div>
+                        <div class="ai-metric">
+                            <div style="font-size: 0.8rem; text-transform: uppercase;">Analyzed Data Points</div>
+                            <div class="ai-metric-val">1.2M</div>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <h3>Latest Simulation Output</h3>
+                        <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1.5rem;">Target:
+                            High-Risk SKU Vector (ID: PROD-001)</p>
+
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.5rem;">
+                            <div
+                                style="padding: 1rem; background-color: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.3); border-radius: var(--radius);">
+                                <div style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase;">
+                                    Probability of Loss</div>
+                                <div style="font-size: 1.5rem; font-weight: 700; color: var(--risk-high);">72%</div>
+                            </div>
+                            <div
+                                style="padding: 1rem; background-color: rgba(6, 182, 212, 0.1); border: 1px solid rgba(6, 182, 212, 0.3); border-radius: var(--radius);">
+                                <div style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase;">
+                                    Predicted Waste</div>
+                                <div style="font-size: 1.5rem; font-weight: 700; color: var(--accent);">45 Units</div>
+                            </div>
+                        </div>
+
+                        <div class="code-block">
+                            >>> RUNNING HEURISTIC: quantity_threshold && velocity_decay
+                            if (asset.qty > 100 && asset.daysToExpiry < 15) { riskProbability +=0.45;
+                                classification="CRITICAL" ; triggerWebhook("slack_logistics_channel"); } // OUTPUT:
+                                True. Vector risk elevated. </div>
+                        </div>
+                    </div>
+            </section>
+
+            <!-- VIEW 4: ANALYTICS -->
+            <section id="view-analytics" class="content">
+                <h2>Telemetry & Analytics</h2>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 1.5rem;">
+                    <div class="card">
+                        <h3>Category Risk Distribution</h3>
+                        <div class="chart-placeholder" style="height: 200px;">[ Radar Chart Placeholder ]</div>
+                    </div>
+                    <div class="card">
+                        <h3>Waste vs Profit Margin</h3>
+                        <div class="chart-placeholder" style="height: 200px;">[ Bar Chart Placeholder ]</div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h3>Historical Expiry Trend (YTD)</h3>
+                    <div class="chart-placeholder" style="height: 300px;">[ Area Timeline Placeholder ]</div>
+                </div>
+            </section>
+
+            <!-- VIEW 5: ALERTS SETTINGS -->
+            <section id="view-alerts" class="content">
+                <h2>Alert Routing Config</h2>
+
+                <div class="card" style="max-width: 600px;">
+                    <div class="settings-list">
+                        <div class="setting-row">
+                            <div class="setting-info">
+                                <h4>Email Escalations</h4>
+                                <p>Send daily digests for high-risk assets to operations@ company.com</p>
+                            </div>
+                            <label class="switch">
+                                <input type="checkbox" checked>
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+
+                        <div class="setting-row">
+                            <div class="setting-info">
+                                <h4>In-App Notifications</h4>
+                                <p>Render critical alerts in the top navigation bar</p>
+                            </div>
+                            <label class="switch">
+                                <input type="checkbox" checked>
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+
+                        <div class="setting-row" style="border-bottom: none; padding-bottom: 0;">
+                            <div class="setting-info">
+                                <h4>WhatsApp Bot Integration</h4>
+                                <p>Route critical alerts to warehouse floor managers</p>
+                            </div>
+                            <label class="switch">
+                                <input type="checkbox" disabled>
+                                <span class="slider"></span>
+                            </label>
+                            <span class="tag"
+                                style="position: absolute; right: 80px; margin-top: 4px; border: 1px solid var(--border); color: var(--text-muted);">Future</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+        </main>
+    </div>
+
+    <!-- Product Modal -->
+    <div class="modal-overlay" id="productModal">
+        <div class="modal">
+            <div class="modal-header">
+                <span id="modalTitle">Register Asset</span>
+                <span style="cursor: pointer; color: var(--text-muted);" onclick="closeModal()">✕</span>
+            </div>
+            <div class="modal-body">
+                <form id="productForm">
+                    <input type="hidden" id="editIndex" value="-1">
+                    <div class="form-group">
+                        <label>Asset Name / SKU</label>
+                        <input type="text" id="pName" class="form-control" required placeholder="Ex: Supply Batch 44">
+                    </div>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                        <div class="form-group">
+                            <label>Category</label>
+                            <select id="pCat" class="form-control" required>
+                                <option value="Dairy">Dairy</option>
+                                <option value="Produce">Produce</option>
+                                <option value="Chemicals">Chemicals</option>
+                                <option value="Hardware">Hardware</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Quantity</label>
+                            <input type="number" id="pQty" class="form-control" required min="1" value="1">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Target Expiry Date</label>
+                        <input type="date" id="pDate" class="form-control" required>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn" onclick="closeModal()">Cancel</button>
+                <button class="btn btn-primary" onclick="saveProduct()">Save Asset Record</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // State
+        let currentRole = 'admin'; // admin | manager | viewer
+        let products = [
+            { id: 1, name: "Industrial Dairy Bulk", category: "Dairy", qty: 250, expiry: new Date(Date.now() + 5 * 86400000).toISOString().split('T')[0] },
+            { id: 2, name: "Cleaning Solvent 90X", category: "Chemicals", qty: 40, expiry: new Date(Date.now() + 15 * 86400000).toISOString().split('T')[0] },
+            { id: 3, name: "Warehouse Backup Server", category: "Hardware", qty: 2, expiry: new Date(Date.now() + 300 * 86400000).toISOString().split('T')[0] }
+        ];
+
+        // Init
+        document.addEventListener('DOMContentLoaded', () => {
+            updateRole();
+            renderTable();
+
+            // Default date logic for modal
+            document.getElementById('pDate').min = new Date().toISOString().split('T')[0];
+        });
+
+        // View Router
+        function switchView(viewId, el) {
+            // Update nav state
+            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+            el.classList.add('active');
+
+            // Hide all views
+            document.querySelectorAll('.content').forEach(c => c.classList.remove('active'));
+
+            // Show target
+            document.getElementById(`view-${viewId}`).classList.add('active');
+
+            // Update Title
+            const titles = {
+                'dashboard': 'Dashboard / Overview',
+                'products': 'Asset Management Engine',
+                'ai': 'AI Intelligence Core',
+                'analytics': 'Telemetry & Analytics',
+                'alerts': 'Alert Routing Configuration'
+            };
+            document.getElementById('headerTitle').innerText = titles[viewId];
+        }
+
+        // Topbar Notification Toggle
+        function toggleNotifications() {
+            document.getElementById('notifDropdown').classList.toggle('show');
+        }
+
+        // Close dropdown when clicking outside
+        window.onclick = function (event) {
+            if (!event.target.closest('.notification')) {
+                const drop = document.getElementById('notifDropdown');
+                if (drop && drop.classList.contains('show')) drop.classList.remove('show');
+            }
+        }
+
+        // Role & Auth Simulation
+        function updateRole() {
+            currentRole = document.getElementById('roleSelector').value;
+            const body = document.getElementById('appBody');
+
+            // Reset classes
+            body.classList.remove('role-admin', 'role-manager', 'role-viewer');
+            body.classList.add(`role-${currentRole}`);
+
+            // Disable inputs in table if viewer
+            renderTable();
+        }
+
+        // Logic & Math
+        function calculateRisk(dateString) {
+            const today = new Date();
+            const expiry = new Date(dateString);
+            const diffTime = expiry - today;
+            const daysToExpiry = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+            if (daysToExpiry < 10) return { label: 'HIGH RISK', class: 'bg-high', days: daysToExpiry };
+            if (daysToExpiry <= 30) return { label: 'Medium', class: 'bg-med', days: daysToExpiry };
+            return { label: 'Low', class: 'bg-low', days: daysToExpiry };
+        }
+
+        function updateDashboardKPIs() {
+            document.getElementById('kpiTotal').innerText = products.length;
+
+            let highCount = 0;
+            let medCount = 0;
+
+            products.forEach(p => {
+                const risk = calculateRisk(p.expiry);
+                if (risk.class === 'bg-high') highCount++;
+                if (risk.class === 'bg-med') medCount++;
+            });
+
+            document.getElementById('kpiExpiring').innerText = highCount;
+            document.getElementById('kpiRisk').innerText = (highCount + medCount);
+            document.getElementById('notifCount').innerText = highCount;
+        }
+
+        // Table Rendering
+        function renderTable() {
+            const tbody = document.getElementById('productTableBody');
+            tbody.innerHTML = '';
+
+            products.forEach((p, index) => {
+                const risk = calculateRisk(p.expiry);
+
+                // Construct Action Buttons based on Role
+                let actionsHTML = '';
+                if (currentRole !== 'viewer') {
+                    actionsHTML += `<button class="btn req-manager" style="padding: 0.2rem 0.6rem;" onclick="editProduct(${index})">Edit</button>`;
+                }
+                if (currentRole === 'admin') {
+                    actionsHTML += `<button class="btn req-admin" style="padding: 0.2rem 0.6rem; color: var(--risk-high); border-color: rgba(239, 68, 68, 0.3);" onclick="deleteProduct(${index})">Del</button>`;
+                }
+                if (currentRole === 'viewer') {
+                    actionsHTML = '<span style="color: var(--text-muted); font-size: 0.75rem;">Restricted</span>';
+                }
+
+                tbody.innerHTML += `
+                    <tr>
+                        <td style="font-weight: 500;">${p.name}</td>
+                        <td><span class="tag">${p.category}</span></td>
+                        <td>${p.qty}</td>
+                        <td>${p.expiry} <span style="font-size: 0.7rem; color: var(--text-muted);">(${risk.days}d)</span></td>
+                        <td>
+                            <div style="display: flex; align-items: center;">
+                                <span class="risk-dot ${risk.class}"></span>
+                                ${risk.label}
+                            </div>
+                        </td>
+                        <td><div class="action-flex">${actionsHTML}</div></td>
+                    </tr>
+                `;
+            });
+
+            updateDashboardKPIs();
+        }
+
+        // Modal Logic
+        function openModal() {
+            document.getElementById('productForm').reset();
+            document.getElementById('editIndex').value = '-1';
+            document.getElementById('modalTitle').innerText = 'Register Asset';
+            document.getElementById('productModal').classList.add('active');
+        }
+
+        function closeModal() {
+            document.getElementById('productModal').classList.remove('active');
+        }
+
+        function saveProduct() {
+            const index = document.getElementById('editIndex').value;
+            const form = document.getElementById('productForm');
+
+            if (!form.checkValidity()) {
+                form.reportValidity();
+                return;
+            }
+
+            const p = {
+                id: Date.now(),
+                name: document.getElementById('pName').value,
+                category: document.getElementById('pCat').value,
+                qty: parseInt(document.getElementById('pQty').value, 10),
+                expiry: document.getElementById('pDate').value
+            };
+
+            if (index === '-1') {
+                products.push(p);
+            } else {
+                p.id = products[index].id;
+                products[index] = p;
+            }
+
+            renderTable();
+            closeModal();
+        }
+
+        function editProduct(index) {
+            const p = products[index];
+            document.getElementById('editIndex').value = index;
+            document.getElementById('pName').value = p.name;
+            document.getElementById('pCat').value = p.category;
+            document.getElementById('pQty').value = p.qty;
+            document.getElementById('pDate').value = p.expiry;
+
+            document.getElementById('modalTitle').innerText = 'Edit Asset';
+            document.getElementById('productModal').classList.add('active');
+        }
+
+        function deleteProduct(index) {
+            if (confirm('Are you sure you want to completely remove this asset record from the system?')) {
+                products.splice(index, 1);
+                renderTable();
+            }
+        }
+    </script>
+</body>
+
+</html>
