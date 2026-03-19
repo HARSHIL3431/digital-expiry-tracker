@@ -46,7 +46,7 @@ def get_scan_history(
 
         results = (
             db.query(ScanResult)
-            .order_by(ScanResult.scanned_at.desc())
+            .order_by(ScanResult.created_at.desc())
             .offset(offset)
             .limit(limit)
             .all()
@@ -59,11 +59,11 @@ def get_scan_history(
             "data": [
                 {
                     "id": r.id,
-                    "image_name": r.image_name,
-                    "expiry_date": r.expiry_date,
-                    "days_left": r.days_left,
-                    "status": r.status,
-                    "scanned_at": r.scanned_at,
+                    "image_path": r.image_path,
+                    "detected_expiry": r.detected_expiry,
+                    "confidence": r.confidence,
+                    "extracted_text": r.extracted_text,
+                    "created_at": r.created_at,
                 }
                 for r in results
             ],

@@ -2,17 +2,16 @@ from passlib.context import CryptContext
 from jose import jwt
 from datetime import datetime, timedelta
 from typing import Optional
+from app.core.config import (
+    SECRET_KEY,
+    ALGORITHM,
+    ACCESS_TOKEN_EXPIRE_MINUTES,
+    ADMIN_EMAIL,
+)
 
 # ==============================
 # 🔐 JWT CONFIGURATION
 # ==============================
-
-SECRET_KEY = "college_project_secret"   # In future move to .env
-ALGORITHM = "HS256"
-ACCESS_TOKEN_EXPIRE_MINUTES = 60
-
-# 👑 Admin Config (College Demo Purpose)
-ADMIN_EMAIL = "admin@det.com"
 
 pwd_context = CryptContext(
     schemes=["bcrypt"],

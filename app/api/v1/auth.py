@@ -1,6 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
-from pydantic import BaseModel
 from datetime import date, timedelta
 
 from app.utils.database import get_db
@@ -12,31 +11,25 @@ from app.core.security import (
     is_admin
 )
 from app.core.dependencies import get_current_user
+from app.services.activity_log_service import create_activity_log
+from app.schemas.auth import (
+    RegisterRequest,
+    LoginRequest,
+    RegisterResponse,
+    LoginResponse,
+    UpgradeResponse,
+    CurrentUserResponse,
+)
 
 
 router = APIRouter()
 
 
 # ==============================
-# 📦 REQUEST SCHEMAS
-# ==============================
-
-class RegisterRequest(BaseModel):
-    name: str
-    email: str
-    password: str
-
-
-class LoginRequest(BaseModel):
-    email: str
-    password: str
-
-
-# ==============================
 # 📝 REGISTER
 # ==============================
 
-@router.post("/register")
+@router.post("/register", response_model=RegisterResponse)
 def register(data: RegisterRequest, db: Session = Depends(get_db)):
     existing_user = db.query(User).filter(User.email == data.email).first()
     if existing_user:
@@ -77,7 +70,7 @@ def register(data: RegisterRequest, db: Session = Depends(get_db)):
 # 🔐 LOGIN
 # ==============================
 
-@router.post("/login")
+@router.post("/login", response_model=LoginResponse)
 def login(data: LoginRequest, db: Session = Depends(get_db)):
     user = db.query(User).filter(User.email == data.email).first()
     if not user:
@@ -87,6 +80,14 @@ def login(data: LoginRequest, db: Session = Depends(get_db)):
         raise HTTPException(status_code=400, detail="Invalid email or password")
 
     token = create_access_token({"sub": user.email})
+
+    create_activity_log(
+        db=db,
+        user_id=user.id,
+        action="USER_LOGIN",
+        description=f"User logged in: {user.email}",
+    )
+    db.commit()
 
     return {
         "access_token": token,
@@ -98,7 +99,7 @@ def login(data: LoginRequest, db: Session = Depends(get_db)):
 # 💳 FAKE UPGRADE (Demo Mode)
 # ==============================
 
-@router.post("/upgrade")
+@router.post("/upgrade", response_model=UpgradeResponse)
 def upgrade_plan(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
@@ -116,4 +117,17 @@ def upgrade_plan(
     return {
         "message": "Plan upgraded to PRO (Demo Mode)",
         "note": "This is a simulated upgrade for college project"
+    }
+
+
+# ==============================
+# 🙋 CURRENT USER (TOKEN CHECK)
+# ==============================
+
+@router.get("/me", response_model=CurrentUserResponse)
+def get_me(current_user: User = Depends(get_current_user)):
+    return {
+        "id": current_user.id,
+        "name": current_user.name,
+        "email": current_user.email,
     }
