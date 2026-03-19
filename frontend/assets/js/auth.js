@@ -1,7 +1,6 @@
-// Authentication logic to handle JWTs with a mock backend
 
-// Simulated API Base URL (replace this when a real backend is attached)
-const API_BASE_URL = 'http://localhost:3000/api';
+// Use relative API base for FastAPI
+const API_BASE_URL = '/api/v1/auth';
 
 /**
  * Validates email format
@@ -20,7 +19,6 @@ async function handleLogin(event) {
     const email = document.getElementById('email').value;
     const password = document.getElementById('password').value;
     const errorBox = document.getElementById('loginError');
-
     errorBox.style.display = 'none';
 
     if (!validateEmail(email) || !password) {
@@ -35,35 +33,22 @@ async function handleLogin(event) {
         btn.innerHTML = 'Logging in...';
         btn.disabled = true;
 
-        /*
-        // REAL BACKEND IMPLEMENTATION:
         const response = await fetch(`${API_BASE_URL}/login`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ email, password })
         });
-        
         const data = await response.json();
-        
+
         if (!response.ok) {
-            throw new Error(data.message || 'Login failed');
+            throw new Error(data.detail || data.message || 'Login failed');
         }
-        
+
         // Save the JWT Token
-        localStorage.setItem('auth_token', data.token);
-        */
+        localStorage.setItem('auth_token', data.access_token);
 
-        // MOCK BACKEND IMPLEMENTATION (for demonstration):
-        await new Promise(resolve => setTimeout(resolve, 1000));
-
-        if (email === 'demo@company.com' && password === 'password') {
-            // Success mock
-            localStorage.setItem('auth_token', 'mock_jwt_token_12345');
-            window.location.href = '../v1.html'; // Redirect to dashboard
-        } else {
-            // Fail mock
-            throw new Error('Invalid email or password. Try demo@company.com / password');
-        }
+        // Redirect to dashboard
+        window.location.href = '/app/dashboard';
 
     } catch (error) {
         errorBox.textContent = error.message;
@@ -71,7 +56,7 @@ async function handleLogin(event) {
     } finally {
         const btn = document.querySelector('.auth-btn');
         if (btn) {
-            btn.innerHTML = 'Log in &rarr;';
+            btn.innerHTML = 'Log in →';
             btn.disabled = false;
         }
     }
@@ -91,12 +76,9 @@ async function handleRegister(event) {
     const lastName = document.getElementById('lastName').value;
     const email = document.getElementById('email').value;
     const password = document.getElementById('password').value;
-
-    // Company name is optional if it's an individual account
-    const company = accountType === 'company' ? document.getElementById('companyName').value : null;
+    const name = `${firstName} ${lastName}`;
 
     const errorBox = document.getElementById('registerError');
-
     errorBox.style.display = 'none';
 
     if (!validateEmail(email)) {
@@ -104,9 +86,8 @@ async function handleRegister(event) {
         errorBox.style.display = 'block';
         return;
     }
-
-    if (password.length < 8) {
-        errorBox.textContent = 'Password must be at least 8 characters long.';
+    if (password.length < 6) {
+        errorBox.textContent = 'Password must be at least 6 characters long.';
         errorBox.style.display = 'block';
         return;
     }
@@ -117,34 +98,19 @@ async function handleRegister(event) {
         btn.innerHTML = 'Creating account...';
         btn.disabled = true;
 
-        /*
-        // REAL BACKEND IMPLEMENTATION:
-        const payload = { accountType, firstName, lastName, email, password };
-        if(accountType === 'company') payload.company = company;
-
         const response = await fetch(`${API_BASE_URL}/register`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload)
+            body: JSON.stringify({ name, email, password })
         });
-        
         const data = await response.json();
-        
+
         if (!response.ok) {
-            throw new Error(data.message || 'Registration failed');
+            throw new Error(data.detail || data.message || 'Registration failed');
         }
-        
-        // Save the JWT Token and redirect
-        localStorage.setItem('auth_token', data.token);
-        */
 
-        // MOCK BACKEND IMPLEMENTATION (for demonstration):
-        await new Promise(resolve => setTimeout(resolve, 1500));
-
-        // Simulate success
-        console.log("Mock Registration Request Payload:", { accountType, firstName, lastName, email, company, password });
-        localStorage.setItem('auth_token', 'mock_jwt_token_67890');
-        window.location.href = '../v1.html'; // Redirect to dashboard
+        // Registration success, redirect to login
+        window.location.href = '/app/login';
 
     } catch (error) {
         errorBox.textContent = error.message;
@@ -152,7 +118,7 @@ async function handleRegister(event) {
     } finally {
         const btn = document.querySelector('.auth-btn');
         if (btn) {
-            btn.innerHTML = 'Create account &rarr;';
+            btn.innerHTML = 'Create account →';
             btn.disabled = false;
         }
     }
@@ -170,7 +136,7 @@ function isAuthenticated() {
  */
 function logout() {
     localStorage.removeItem('auth_token');
-    window.location.href = 'pages/login.html';
+    window.location.href = '/app/login';
 }
 
 // Bind events on load depending on which page we are on
@@ -185,10 +151,10 @@ document.addEventListener('DOMContentLoaded', () => {
         registerForm.addEventListener('submit', handleRegister);
     }
 
-    /*
-    // OPTIONAL: If we want to check auth on protected pages, uncomment this:
-    if(!isAuthenticated() && window.location.pathname.includes('/dashboard')) {
-        window.location.href = '/pages/login.html';
+    // Protect dashboard route
+    if (window.location.pathname === '/app/dashboard') {
+        if (!isAuthenticated()) {
+            window.location.href = '/app/login';
+        }
     }
-    */
 });

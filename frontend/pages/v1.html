@@ -5,212 +5,283 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Digital Expiry Tracker | Enterprise Asset Management</title>
+
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="../assets/css/style.css">
+
+    <!-- FastAPI Static -->
+    <link rel="stylesheet" href="/assets/css/style.css">
 </head>
 
 <body>
-    <div class="ambient-bg"></div>
 
-    <nav>
-        <a href="v1.html" class="logo">
-            <div class="logo-icon"></div>
-            ExpiryTracker
-        </a>
-        <div class="nav-links">
-            <a href="#features">Platform</a>
-            <a href="#demo">Integrations</a>
-            <a href="#pricing">Pricing</a>
-            <a href="#company">Company</a>
-        </div>
-        <div class="nav-actions">
-            <a href="login.html" class="btn btn-secondary" style="border: none; background: transparent;">Log
-                in</a>
-            <a href="register.html" class="btn btn-primary">Start Trial</a>
-        </div>
-    </nav>
+<div class="ambient-bg"></div>
 
-    <section class="hero">
-        <div class="hero-badge">
-            <span class="new">New</span>
-            AI-powered contract parsing is here &rarr;
-        </div>
-        <h1>Manage digital assets with<br><span>unrivaled precision.</span></h1>
-        <p>The enterprise-grade command center for SSL certificates, domains, API keys, and vendor contracts. Never let
-            a critical asset expire unnoticed again.</p>
-        <div class="hero-cta">
-            <a href="pages/register.html" class="btn btn-primary">Start building for free</a>
-            <a href="#demo" class="btn btn-secondary">Request Demo</a>
-        </div>
-    </section>
+<nav>
 
-    <!-- Mockup Preview -->
-    <section class="mockup-container">
-        <div class="mockup reveal">
-            <div class="mockup-header">
-                <div class="mockup-dot"></div>
-                <div class="mockup-dot"></div>
-                <div class="mockup-dot"></div>
-                <div
-                    style="flex: 1; text-align: center; color: var(--text-muted); font-size: 0.75rem; font-family: monospace;">
-                    app.expirytracker.com</div>
-            </div>
-            <div class="mockup-body">
-                <div class="mockup-sidebar">
-                    <div class="mockup-line active"></div>
-                    <div class="mockup-line"></div>
-                    <div class="mockup-line short"></div>
-                    <div
-                        style="margin-top: 1.5rem; color: var(--text-muted); font-size: 0.75rem; font-weight: 600; text-transform: uppercase;">
-                        Settings</div>
-                    <div class="mockup-line"></div>
-                    <div class="mockup-line short"></div>
-                </div>
-                <div class="mockup-content">
-                    <div
-                        style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
-                        <h3 style="margin: 0; font-size: 1.25rem;">Critical Expirations</h3>
-                        <div class="btn btn-primary" style="padding: 0.4rem 0.8rem; font-size: 0.8rem;">+ Add Asset
-                        </div>
-                    </div>
+    <a href="/" class="logo">
+        <div class="logo-icon"></div>
+        ExpiryTracker
+    </a>
 
-                    <div class="expiry-item danger">
-                        <div>
-                            <strong
-                                style="color: #ef4444; font-size: 1rem; display: block; margin-bottom: 4px;">api.production.internal</strong>
-                            <span
-                                style="color: var(--text-muted); font-size: 0.85rem; background: rgba(255,255,255,0.05); padding: 2px 6px; border-radius: 4px;">SSL
-                                Certificate</span>
-                        </div>
-                        <div style="text-align: right;">
-                            <div style="font-weight: 600; color: #ef4444;">Expires in 2 days</div>
-                            <div style="font-size: 0.8rem; color: var(--text-muted); margin-top: 4px;">Auto-renew failed
-                            </div>
-                        </div>
-                    </div>
+    <div class="nav-links">
+        <a href="/#features">Platform</a>
+        <a href="/#demo">Integrations</a>
+        <a href="/#pricing">Pricing</a>
+        <a href="/#company">Company</a>
+    </div>
 
-                    <div class="expiry-item warning">
-                        <div>
-                            <strong
-                                style="color: #f59e0b; font-size: 1rem; display: block; margin-bottom: 4px;">Cloudflare
-                                Enterprise Contract</strong>
-                            <span
-                                style="color: var(--text-muted); font-size: 0.85rem; background: rgba(255,255,255,0.05); padding: 2px 6px; border-radius: 4px;">Vendor
-                                Agreement</span>
-                        </div>
-                        <div style="text-align: right;">
-                            <div style="font-weight: 600; color: #f59e0b;">Expires in 14 days</div>
-                            <div style="font-size: 0.8rem; color: var(--text-muted); margin-top: 4px;">Requires manual
-                                signature</div>
-                        </div>
-                    </div>
+    <div class="nav-actions">
+        <a href="/app/login" class="btn btn-secondary" style="border:none;background:transparent;">Log in</a>
+        <a href="/app/register" class="btn btn-primary">Start Trial</a>
+    </div>
 
-                    <div class="expiry-item">
-                        <div>
-                            <strong style="font-size: 1rem; display: block; margin-bottom: 4px;">Stripe API Secret
-                                Key</strong>
-                            <span
-                                style="color: var(--text-muted); font-size: 0.85rem; background: rgba(255,255,255,0.05); padding: 2px 6px; border-radius: 4px;">Authentication
-                                Matrix</span>
-                        </div>
-                        <div style="text-align: right;">
-                            <div style="font-weight: 600;">Expires in 45 days</div>
-                            <div style="font-size: 0.8rem; color: var(--text-muted); margin-top: 4px;">Rotation
-                                scheduled</div>
-                        </div>
-                    </div>
+</nav>
 
-                </div>
-            </div>
-        </div>
-    </section>
 
-    <section class="features" id="features">
-        <div class="features-grid">
-            <div class="feature-card reveal" style="transition-delay: 0.1s;">
-                <div class="feature-icon">
-                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
-                            d="M13 10V3L4 14h7v7l9-11h-7z"></path>
-                    </svg>
-                </div>
-                <h3>Intelligent Routing</h3>
-                <p>Don't just send an email. Establish complex escalation policies firing webhooks to Slack, Microsoft
-                    Teams, or PagerDuty before critical dates hit zero.</p>
-            </div>
-            <div class="feature-card reveal" style="transition-delay: 0.2s;">
-                <div class="feature-icon">
-                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
-                            d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z">
-                        </path>
-                    </svg>
-                </div>
-                <h3>Enterprise Security</h3>
-                <p>SOC2 compliant infrastructure. AES-256 encryption at rest, SAML SSO integration, and highly granular
-                    role-based access control for large organizations.</p>
-            </div>
-            <div class="feature-card reveal" style="transition-delay: 0.3s;">
-                <div class="feature-icon">
-                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
-                            d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4m0 5c0 2.21-3.582 4-8 4s-8-1.79-8-4">
-                        </path>
-                    </svg>
-                </div>
-                <h3>Zero-Touch Discovery</h3>
-                <p>Connect your AWS, Azure, and Google Cloud endpoints. Our engine automatically discovers expiring
-                    certificates, database domains, and secrets.</p>
-            </div>
-        </div>
-    </section>
+<section class="hero">
 
-    <section class="cta-bottom reveal">
-        <h2>Ready to secure your assets?</h2>
-        <p style="color: var(--text-muted); margin-bottom: 2.5rem; font-size: 1.25rem;">Join thousands of modern
-            engineering teams.</p>
-        <a href="pages/register.html" class="btn btn-primary" style="font-size: 1.1rem; padding: 1rem 2.5rem;">Start
-            tracking today</a>
-    </section>
+    <div class="hero-badge">
+        <span class="new">New</span>
+        AI-powered contract parsing is here →
+    </div>
 
-    <footer>
-        <div>
-            <div style="font-weight: 700; color: var(--text-main); margin-bottom: 8px;">ExpiryTracker</div>
-            <div>&copy; 2026 ExpiryTracker Inc. All rights reserved.</div>
-        </div>
-        <div style="display: flex; gap: 2rem;">
-            <a href="#" style="color: var(--text-muted); text-decoration: none; transition: color 0.2s;">Privacy
-                Policy</a>
-            <a href="#" style="color: var(--text-muted); text-decoration: none; transition: color 0.2s;">Terms of
-                Service</a>
-            <a href="#" style="color: var(--text-muted); text-decoration: none; transition: color 0.2s;">Contact
-                Sales</a>
-        </div>
-    </footer>
+    <h1>Manage digital assets with<br><span>unrivaled precision.</span></h1>
 
-    <script>
-        // Minimal scroll animations
-        document.addEventListener('DOMContentLoaded', () => {
-            const observer = new IntersectionObserver((entries) => {
-                entries.forEach(entry => {
-                    if (entry.isIntersecting) {
-                        entry.target.style.opacity = '1';
-                        entry.target.style.transform = 'translateY(0)';
-                        observer.unobserve(entry.target);
-                    }
-                });
-            }, { threshold: 0.1 });
+    <p>
+        The enterprise-grade command center for SSL certificates, domains, API keys,
+        and vendor contracts. Never let a critical asset expire unnoticed again.
+    </p>
 
-            document.querySelectorAll('.reveal').forEach((el) => {
-                el.style.opacity = '0';
-                if (!el.classList.contains('mockup')) {
-                    el.style.transform = 'translateY(30px)';
-                }
-                el.style.transition = 'opacity 0.8s ease, transform 0.8s ease';
-                observer.observe(el);
-            });
-        });
-    </script>
+    <div class="hero-cta">
+        <a href="/app/register" class="btn btn-primary">Start building for free</a>
+        <a href="#demo" class="btn btn-secondary">Request Demo</a>
+    </div>
+
+</section>
+
+
+
+<section class="mockup-container">
+
+<div class="mockup reveal">
+
+<div class="mockup-header">
+<div class="mockup-dot"></div>
+<div class="mockup-dot"></div>
+<div class="mockup-dot"></div>
+
+<div style="flex:1;text-align:center;color:var(--text-muted);font-size:0.75rem;font-family:monospace;">
+app.expirytracker.com
+</div>
+
+</div>
+
+
+<div class="mockup-body">
+
+<div class="mockup-sidebar">
+
+<div class="mockup-line active"></div>
+<div class="mockup-line"></div>
+<div class="mockup-line short"></div>
+
+<div style="margin-top:1.5rem;color:var(--text-muted);font-size:0.75rem;font-weight:600;text-transform:uppercase;">
+Settings
+</div>
+
+<div class="mockup-line"></div>
+<div class="mockup-line short"></div>
+
+</div>
+
+
+<div class="mockup-content">
+
+<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:2rem;">
+<h3 style="margin:0;font-size:1.25rem;">Critical Expirations</h3>
+<div class="btn btn-primary" style="padding:0.4rem 0.8rem;font-size:0.8rem;">+ Add Asset</div>
+</div>
+
+
+<div class="expiry-item danger">
+
+<div>
+<strong style="color:#ef4444;font-size:1rem;display:block;margin-bottom:4px;">
+api.production.internal
+</strong>
+
+<span style="color:var(--text-muted);font-size:0.85rem;background:rgba(255,255,255,0.05);padding:2px 6px;border-radius:4px;">
+SSL Certificate
+</span>
+</div>
+
+<div style="text-align:right;">
+<div style="font-weight:600;color:#ef4444;">Expires in 2 days</div>
+<div style="font-size:0.8rem;color:var(--text-muted);margin-top:4px;">Auto-renew failed</div>
+</div>
+
+</div>
+
+
+<div class="expiry-item warning">
+
+<div>
+<strong style="color:#f59e0b;font-size:1rem;display:block;margin-bottom:4px;">
+Cloudflare Enterprise Contract
+</strong>
+
+<span style="color:var(--text-muted);font-size:0.85rem;background:rgba(255,255,255,0.05);padding:2px 6px;border-radius:4px;">
+Vendor Agreement
+</span>
+</div>
+
+<div style="text-align:right;">
+<div style="font-weight:600;color:#f59e0b;">Expires in 14 days</div>
+<div style="font-size:0.8rem;color:var(--text-muted);margin-top:4px;">Requires manual signature</div>
+</div>
+
+</div>
+
+
+<div class="expiry-item">
+
+<div>
+<strong style="font-size:1rem;display:block;margin-bottom:4px;">
+Stripe API Secret Key
+</strong>
+
+<span style="color:var(--text-muted);font-size:0.85rem;background:rgba(255,255,255,0.05);padding:2px 6px;border-radius:4px;">
+Authentication Matrix
+</span>
+</div>
+
+<div style="text-align:right;">
+<div style="font-weight:600;">Expires in 45 days</div>
+<div style="font-size:0.8rem;color:var(--text-muted);margin-top:4px;">Rotation scheduled</div>
+</div>
+
+</div>
+
+</div>
+</div>
+</div>
+
+</section>
+
+
+
+<section class="features" id="features">
+
+<div class="features-grid">
+
+<div class="feature-card reveal" style="transition-delay:0.1s;">
+<div class="feature-icon">⚡</div>
+<h3>Intelligent Routing</h3>
+<p>
+Establish escalation policies firing webhooks to Slack, Teams, or PagerDuty
+before critical dates hit zero.
+</p>
+</div>
+
+
+<div class="feature-card reveal" style="transition-delay:0.2s;">
+<div class="feature-icon">🔐</div>
+<h3>Enterprise Security</h3>
+<p>
+SOC2 compliant infrastructure with AES-256 encryption and SAML SSO integration.
+</p>
+</div>
+
+
+<div class="feature-card reveal" style="transition-delay:0.3s;">
+<div class="feature-icon">☁️</div>
+<h3>Zero-Touch Discovery</h3>
+<p>
+Connect AWS, Azure, or Google Cloud to automatically detect expiring assets.
+</p>
+</div>
+
+</div>
+
+</section>
+
+
+
+<section class="cta-bottom reveal">
+
+<h2>Ready to secure your assets?</h2>
+
+<p style="color:var(--text-muted);margin-bottom:2.5rem;font-size:1.25rem;">
+Join thousands of modern engineering teams.
+</p>
+
+<a href="/app/register" class="btn btn-primary"
+style="font-size:1.1rem;padding:1rem 2.5rem;">
+Start tracking today
+</a>
+
+</section>
+
+
+
+<footer>
+
+<div>
+<div style="font-weight:700;color:var(--text-main);margin-bottom:8px;">
+ExpiryTracker
+</div>
+
+<div>© 2026 ExpiryTracker Inc. All rights reserved.</div>
+</div>
+
+
+<div style="display:flex;gap:2rem;">
+<a href="#" style="color:var(--text-muted);text-decoration:none;">Privacy Policy</a>
+<a href="#" style="color:var(--text-muted);text-decoration:none;">Terms of Service</a>
+<a href="#" style="color:var(--text-muted);text-decoration:none;">Contact Sales</a>
+</div>
+
+</footer>
+
+
+<script>
+
+document.addEventListener('DOMContentLoaded', () => {
+
+const observer = new IntersectionObserver((entries) => {
+
+entries.forEach(entry => {
+
+if (entry.isIntersecting) {
+
+entry.target.style.opacity = '1';
+entry.target.style.transform = 'translateY(0)';
+observer.unobserve(entry.target);
+
+}
+
+});
+
+}, { threshold:0.1 });
+
+
+document.querySelectorAll('.reveal').forEach((el) => {
+
+el.style.opacity = '0';
+
+if (!el.classList.contains('mockup')) {
+el.style.transform = 'translateY(30px)';
+}
+
+el.style.transition = 'opacity 0.8s ease, transform 0.8s ease';
+
+observer.observe(el);
+
+});
+
+});
+
+</script>
+
 </body>
-
 </html>

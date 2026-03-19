@@ -8,7 +8,6 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            /* Palette Requirements: Charcoal (#0F172A), Graphite (#1E293B), Sharp Cyan (#06B6D4) */
             --bg-master: #0F172A;
             --bg-panel: #1E293B;
             --bg-panel-hover: #334155;
@@ -17,14 +16,18 @@
             --text-main: #F8FAFC;
             --text-muted: #94A3B8;
             --border: #334155;
+            --glass-bg: rgba(30, 41, 59, 0.48);
+            --glass-bg-soft: rgba(30, 41, 59, 0.34);
+            --glass-border: rgba(148, 163, 184, 0.2);
+            --glow-cyan: rgba(6, 182, 212, 0.24);
+            --glow-purple: rgba(129, 140, 248, 0.18);
 
             --risk-low: #10B981;
             --risk-med: #F59E0B;
             --risk-high: #EF4444;
 
-            --radius: 4px;
-            /* Strict constraint: max 6px */
-            --transition: all 0.2s ease;
+            --radius: 6px;
+            --transition: all 0.24s ease;
         }
 
         * {
@@ -36,12 +39,39 @@
         }
 
         body {
-            background-color: var(--bg-master);
+            background: radial-gradient(circle at 12% -10%, rgba(6, 182, 212, 0.18), transparent 38%),
+                radial-gradient(circle at 88% 0%, rgba(99, 102, 241, 0.16), transparent 32%),
+                linear-gradient(160deg, #0b1328 0%, #0f172a 48%, #0b1220 100%);
             color: var(--text-main);
             min-height: 100vh;
             display: flex;
             overflow-x: hidden;
             -webkit-font-smoothing: antialiased;
+            position: relative;
+        }
+
+        body::before,
+        body::after {
+            content: "";
+            position: fixed;
+            width: 340px;
+            height: 340px;
+            border-radius: 999px;
+            pointer-events: none;
+            filter: blur(56px);
+            z-index: 0;
+        }
+
+        body::before {
+            top: 8%;
+            right: -90px;
+            background: var(--glow-cyan);
+        }
+
+        body::after {
+            left: -110px;
+            bottom: 5%;
+            background: var(--glow-purple);
         }
 
         /* Layout Structure */
@@ -49,13 +79,16 @@
             display: flex;
             width: 100%;
             height: 100vh;
+            position: relative;
+            z-index: 1;
         }
 
         /* Left Sidebar */
         .sidebar {
             width: 240px;
-            background-color: var(--bg-panel);
-            border-right: 1px solid var(--border);
+            background: linear-gradient(180deg, rgba(30, 41, 59, 0.72) 0%, rgba(15, 23, 42, 0.72) 100%);
+            border-right: 1px solid var(--glass-border);
+            backdrop-filter: blur(14px);
             display: flex;
             flex-direction: column;
             flex-shrink: 0;
@@ -66,7 +99,7 @@
             display: flex;
             align-items: center;
             padding: 0 1.25rem;
-            border-bottom: 1px solid var(--border);
+            border-bottom: 1px solid var(--glass-border);
             font-weight: 700;
             font-size: 1.1rem;
             color: var(--text-main);
@@ -100,40 +133,56 @@
             align-items: center;
             gap: 10px;
             text-decoration: none;
+            position: relative;
         }
 
         .nav-item:hover {
-            background-color: var(--bg-panel-hover);
+            background-color: rgba(148, 163, 184, 0.12);
             color: var(--text-main);
+            transform: translateX(1px);
         }
 
         .nav-item.active {
-            background-color: rgba(6, 182, 212, 0.1);
+            background-color: rgba(6, 182, 212, 0.16);
             color: var(--accent);
             border-left: 3px solid var(--accent);
             border-radius: 0 var(--radius) var(--radius) 0;
+            box-shadow: inset 0 0 0 1px rgba(6, 182, 212, 0.2), 0 0 20px rgba(6, 182, 212, 0.12);
+        }
+
+        .nav-item.active::after {
+            content: "";
+            position: absolute;
+            right: 8px;
+            width: 6px;
+            height: 6px;
+            border-radius: 999px;
+            background: #67e8f9;
+            box-shadow: 0 0 8px rgba(103, 232, 249, 0.8);
         }
 
         .user-profile {
             padding: 1rem;
-            border-top: 1px solid var(--border);
+            border-top: 1px solid var(--glass-border);
             display: flex;
             align-items: center;
             gap: 10px;
             font-size: 0.85rem;
+            background-color: rgba(2, 6, 23, 0.26);
         }
 
         .avatar {
             width: 32px;
             height: 32px;
-            background-color: var(--bg-panel-hover);
+            background: radial-gradient(circle at 35% 30%, rgba(6, 182, 212, 0.5), rgba(6, 182, 212, 0.15));
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
             font-weight: 600;
-            color: var(--accent);
-            border: 1px solid var(--border);
+            color: #e2e8f0;
+            border: 1px solid rgba(125, 211, 252, 0.45);
+            box-shadow: 0 0 0 2px rgba(6, 182, 212, 0.16);
         }
 
         /* Main Content wrapper */
@@ -149,8 +198,9 @@
         /* Top Header */
         .header {
             height: 60px;
-            background-color: var(--bg-master);
-            border-bottom: 1px solid var(--border);
+            background: rgba(15, 23, 42, 0.54);
+            border-bottom: 1px solid var(--glass-border);
+            backdrop-filter: blur(12px);
             display: flex;
             align-items: center;
             justify-content: space-between;
@@ -168,7 +218,27 @@
         .header-actions {
             display: flex;
             align-items: center;
-            gap: 1.5rem;
+            gap: 1rem;
+        }
+
+        .last-updated {
+            font-size: 0.76rem;
+            color: var(--text-muted);
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            padding: 0.35rem 0.6rem;
+            border-radius: 999px;
+            border: 1px solid var(--glass-border);
+            background: rgba(15, 23, 42, 0.5);
+        }
+
+        .last-updated-dot {
+            width: 7px;
+            height: 7px;
+            border-radius: 999px;
+            background: #34d399;
+            box-shadow: 0 0 0 4px rgba(52, 211, 153, 0.14);
         }
 
         .role-badge {
@@ -188,10 +258,14 @@
             color: var(--text-muted);
             display: flex;
             align-items: center;
+            padding: 0.35rem;
+            border-radius: 999px;
+            transition: var(--transition);
         }
 
         .notification:hover {
             color: var(--text-main);
+            background: rgba(148, 163, 184, 0.12);
         }
 
         .notification-badge {
@@ -216,13 +290,104 @@
             top: 30px;
             right: -10px;
             width: 320px;
-            background-color: var(--bg-panel);
-            border: 1px solid var(--border);
+            background: rgba(15, 23, 42, 0.82);
+            border: 1px solid var(--glass-border);
+            backdrop-filter: blur(14px);
             border-radius: var(--radius);
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+            box-shadow: 0 16px 36px rgba(2, 6, 23, 0.45);
             display: none;
             flex-direction: column;
             z-index: 100;
+        }
+
+        .notif-section-title {
+            font-size: 0.72rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: var(--text-muted);
+            padding: 0.55rem 1rem 0.45rem 1rem;
+            background: rgba(2, 6, 23, 0.25);
+            border-top: 1px solid rgba(148, 163, 184, 0.1);
+            border-bottom: 1px solid rgba(148, 163, 184, 0.1);
+        }
+
+        .user-menu {
+            position: relative;
+        }
+
+        .user-menu-trigger {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.55rem;
+            padding: 0.3rem 0.5rem;
+            border-radius: 999px;
+            border: 1px solid var(--glass-border);
+            background: rgba(15, 23, 42, 0.46);
+            cursor: pointer;
+            color: var(--text-main);
+            transition: var(--transition);
+        }
+
+        .user-menu-trigger:hover {
+            border-color: rgba(148, 163, 184, 0.48);
+            background: rgba(30, 41, 59, 0.58);
+        }
+
+        .header-avatar {
+            width: 28px;
+            height: 28px;
+            border-radius: 999px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: #e2e8f0;
+            border: 1px solid rgba(125, 211, 252, 0.42);
+            background: radial-gradient(circle at 35% 30%, rgba(6, 182, 212, 0.6), rgba(6, 182, 212, 0.2));
+        }
+
+        .user-menu-dropdown {
+            position: absolute;
+            top: 40px;
+            right: 0;
+            min-width: 180px;
+            border-radius: var(--radius);
+            border: 1px solid var(--glass-border);
+            background: rgba(15, 23, 42, 0.86);
+            backdrop-filter: blur(14px);
+            box-shadow: 0 16px 36px rgba(2, 6, 23, 0.45);
+            overflow: hidden;
+            display: none;
+            z-index: 120;
+        }
+
+        .user-menu-dropdown.show {
+            display: block;
+        }
+
+        .user-menu-item {
+            width: 100%;
+            border: 0;
+            border-bottom: 1px solid rgba(148, 163, 184, 0.12);
+            background: transparent;
+            color: var(--text-main);
+            padding: 0.66rem 0.85rem;
+            text-align: left;
+            font-size: 0.82rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            cursor: pointer;
+        }
+
+        .user-menu-item:last-child {
+            border-bottom: none;
+        }
+
+        .user-menu-item:hover {
+            background: rgba(51, 65, 85, 0.45);
         }
 
         .notification-dropdown.show {
@@ -254,6 +419,14 @@
             border-bottom: none;
         }
 
+        .notif-clickable {
+            cursor: pointer;
+        }
+
+        .notif-clickable:hover {
+            background-color: rgba(6, 182, 212, 0.1) !important;
+        }
+
         /* Content Area */
         .content {
             padding: 2rem;
@@ -280,9 +453,9 @@
         }
 
         .btn {
-            background-color: var(--bg-panel);
+            background: linear-gradient(140deg, rgba(30, 41, 59, 0.7), rgba(15, 23, 42, 0.75));
             color: var(--text-main);
-            border: 1px solid var(--border);
+            border: 1px solid var(--glass-border);
             padding: 0.5rem 1rem;
             border-radius: var(--radius);
             font-size: 0.85rem;
@@ -295,20 +468,27 @@
         }
 
         .btn:hover:not(:disabled) {
-            background-color: var(--bg-panel-hover);
-            border-color: var(--text-muted);
+            transform: translateY(-1px);
+            border-color: rgba(148, 163, 184, 0.45);
+            box-shadow: 0 8px 18px rgba(2, 6, 23, 0.32);
+        }
+
+        .btn:active:not(:disabled) {
+            transform: translateY(0) scale(0.98);
         }
 
         .btn-primary {
-            background-color: var(--accent);
-            color: #000;
-            border-color: var(--accent);
+            background: linear-gradient(140deg, #22d3ee 0%, #06b6d4 42%, #0284c7 100%);
+            color: #032434;
+            border-color: rgba(103, 232, 249, 0.6);
             font-weight: 600;
+            box-shadow: 0 0 0 1px rgba(103, 232, 249, 0.3), 0 8px 20px rgba(6, 182, 212, 0.28);
         }
 
         .btn-primary:hover:not(:disabled) {
-            background-color: var(--accent-hover);
-            border-color: var(--accent-hover);
+            background: linear-gradient(140deg, #67e8f9 0%, #06b6d4 48%, #0284c7 100%);
+            border-color: rgba(165, 243, 252, 0.8);
+            box-shadow: 0 0 0 1px rgba(103, 232, 249, 0.35), 0 10px 26px rgba(6, 182, 212, 0.34);
         }
 
         .btn:disabled {
@@ -317,11 +497,19 @@
         }
 
         .card {
-            background-color: var(--bg-panel);
-            border: 1px solid var(--border);
+            background: linear-gradient(140deg, var(--glass-bg) 0%, var(--glass-bg-soft) 100%);
+            border: 1px solid var(--glass-border);
+            backdrop-filter: blur(14px);
             border-radius: var(--radius);
             padding: 1.5rem;
             position: relative;
+            box-shadow: inset 0 1px 0 rgba(226, 232, 240, 0.06), 0 10px 24px rgba(2, 6, 23, 0.32);
+            transition: var(--transition);
+        }
+
+        .card:hover {
+            transform: translateY(-2px);
+            border-color: rgba(125, 211, 252, 0.4);
         }
 
         /* ----------------------- DASHBOARD PAGE ----------------------- */
@@ -336,6 +524,18 @@
             display: flex;
             flex-direction: column;
             gap: 0.5rem;
+            overflow: hidden;
+        }
+
+        .kpi-card::after {
+            content: "";
+            position: absolute;
+            inset: auto -25% -55% auto;
+            width: 160px;
+            height: 160px;
+            border-radius: 999px;
+            background: radial-gradient(circle, rgba(6, 182, 212, 0.18), transparent 68%);
+            pointer-events: none;
         }
 
         .kpi-title {
@@ -348,7 +548,8 @@
 
         .kpi-value {
             font-size: 2.2rem;
-            font-weight: 600;
+            font-weight: 700;
+            letter-spacing: -0.04em;
         }
 
         .kpi-sub {
@@ -390,6 +591,15 @@
             font-size: 0.85rem;
         }
 
+        .chart-wrap {
+            width: 100%;
+            height: 250px;
+            border-radius: var(--radius);
+            border: 1px solid var(--glass-border);
+            background: rgba(2, 6, 23, 0.2);
+            padding: 0.75rem 0.5rem 0.35rem 0.35rem;
+        }
+
         .alert-panel {
             display: flex;
             flex-direction: column;
@@ -398,7 +608,8 @@
 
         .alert-item {
             padding: 1rem;
-            background-color: rgba(0, 0, 0, 0.2);
+            background-color: rgba(15, 23, 42, 0.4);
+            border: 1px solid rgba(148, 163, 184, 0.16);
             border-left: 3px solid var(--accent);
             border-radius: 0 var(--radius) var(--radius) 0;
             font-size: 0.85rem;
@@ -412,6 +623,33 @@
             border-left-color: var(--risk-med);
         }
 
+        .status-banner {
+            margin: 1rem 2rem 0 2rem;
+            padding: 0.75rem 1rem;
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            font-size: 0.85rem;
+            display: none;
+        }
+
+        .status-banner.info {
+            border-color: rgba(6, 182, 212, 0.3);
+            background-color: rgba(6, 182, 212, 0.08);
+            color: var(--text-main);
+        }
+
+        .status-banner.error {
+            border-color: rgba(239, 68, 68, 0.4);
+            background-color: rgba(239, 68, 68, 0.12);
+            color: #fecaca;
+        }
+
+        .status-banner.success {
+            border-color: rgba(16, 185, 129, 0.35);
+            background-color: rgba(16, 185, 129, 0.1);
+            color: #bbf7d0;
+        }
+
         /* ----------------------- PRODUCT MGMT ----------------------- */
         .page-header {
             display: flex;
@@ -423,9 +661,10 @@
         .table-container {
             width: 100%;
             overflow-x: auto;
-            border: 1px solid var(--border);
+            border: 1px solid var(--glass-border);
             border-radius: var(--radius);
-            background-color: var(--bg-panel);
+            background: rgba(15, 23, 42, 0.42);
+            backdrop-filter: blur(12px);
         }
 
         table {
@@ -436,19 +675,19 @@
 
         th {
             text-align: left;
-            padding: 1rem;
-            background-color: rgba(0, 0, 0, 0.2);
+            padding: 0.95rem 1rem;
+            background: rgba(15, 23, 42, 0.66);
             color: var(--text-muted);
             font-weight: 600;
             text-transform: uppercase;
             letter-spacing: 0.05em;
             font-size: 0.75rem;
-            border-bottom: 1px solid var(--border);
+            border-bottom: 1px solid var(--glass-border);
         }
 
         td {
-            padding: 1rem;
-            border-bottom: 1px solid var(--border);
+            padding: 0.95rem 1rem;
+            border-bottom: 1px solid rgba(148, 163, 184, 0.1);
             vertical-align: middle;
         }
 
@@ -457,16 +696,25 @@
         }
 
         tr:hover td {
-            background-color: var(--bg-panel-hover);
+            background-color: rgba(51, 65, 85, 0.28);
+        }
+
+        tr {
+            transition: background-color 0.22s ease;
+        }
+
+        .row-highlight td {
+            background: rgba(34, 211, 238, 0.12) !important;
+            box-shadow: inset 0 0 0 1px rgba(34, 211, 238, 0.28);
         }
 
         .tag {
-            padding: 2px 8px;
+            padding: 3px 9px;
             border-radius: var(--radius);
-            font-size: 0.7rem;
+            font-size: 0.72rem;
             font-weight: 600;
-            background: var(--bg-master);
-            border: 1px solid var(--border);
+            background: rgba(15, 23, 42, 0.76);
+            border: 1px solid var(--glass-border);
         }
 
         .risk-dot {
@@ -492,6 +740,187 @@
         .action-flex {
             display: flex;
             gap: 0.5rem;
+        }
+
+        .icon-btn {
+            width: 30px;
+            height: 30px;
+            padding: 0;
+            justify-content: center;
+            border-radius: 8px;
+        }
+
+        .icon-btn.delete {
+            color: #fca5a5;
+            border-color: rgba(239, 68, 68, 0.35);
+            background: rgba(239, 68, 68, 0.12);
+        }
+
+        .icon-btn.delete:hover:not(:disabled) {
+            border-color: rgba(248, 113, 113, 0.55);
+            background: rgba(239, 68, 68, 0.2);
+        }
+
+        .status-pill {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 94px;
+            padding: 0.26rem 0.52rem;
+            border-radius: 999px;
+            font-size: 0.7rem;
+            font-weight: 700;
+            letter-spacing: 0.05em;
+            border: 1px solid transparent;
+            text-transform: uppercase;
+        }
+
+        .status-pill.safe {
+            color: #86efac;
+            background: rgba(16, 185, 129, 0.16);
+            border-color: rgba(16, 185, 129, 0.34);
+        }
+
+        .status-pill.expiring {
+            color: #fde68a;
+            background: rgba(245, 158, 11, 0.16);
+            border-color: rgba(245, 158, 11, 0.34);
+        }
+
+        .status-pill.expired {
+            color: #fca5a5;
+            background: rgba(239, 68, 68, 0.16);
+            border-color: rgba(239, 68, 68, 0.34);
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 2.25rem 1rem;
+        }
+
+        .empty-state-icon {
+            width: 42px;
+            height: 42px;
+            border-radius: 12px;
+            margin: 0 auto 0.7rem auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #67e8f9;
+            background: rgba(6, 182, 212, 0.16);
+            border: 1px solid rgba(6, 182, 212, 0.38);
+            box-shadow: 0 0 22px rgba(6, 182, 212, 0.15);
+        }
+
+        .empty-state-title {
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: var(--text-main);
+            margin-bottom: 0.25rem;
+        }
+
+        .empty-state-text {
+            font-size: 0.82rem;
+            color: var(--text-muted);
+        }
+
+        .timeline {
+            position: relative;
+            padding-left: 0.35rem;
+        }
+
+        .timeline::before {
+            content: "";
+            position: absolute;
+            left: 20px;
+            top: 6px;
+            bottom: 6px;
+            width: 2px;
+            background: linear-gradient(180deg, rgba(6, 182, 212, 0.45), rgba(148, 163, 184, 0.18));
+        }
+
+        .timeline-item {
+            position: relative;
+            display: grid;
+            grid-template-columns: 28px 1fr;
+            gap: 0.85rem;
+            margin-bottom: 0.7rem;
+        }
+
+        .timeline-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .timeline-icon {
+            width: 28px;
+            height: 28px;
+            border-radius: 999px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid var(--glass-border);
+            background: rgba(30, 41, 59, 0.78);
+            z-index: 1;
+        }
+
+        .timeline-icon.login {
+            color: #67e8f9;
+        }
+
+        .timeline-icon.create {
+            color: #86efac;
+        }
+
+        .timeline-icon.delete {
+            color: #fca5a5;
+        }
+
+        .timeline-icon.notice {
+            color: #fde68a;
+        }
+
+        .timeline-content {
+            background: rgba(15, 23, 42, 0.36);
+            border: 1px solid rgba(148, 163, 184, 0.14);
+            border-radius: var(--radius);
+            padding: 0.6rem 0.75rem;
+        }
+
+        .timeline-title {
+            font-size: 0.78rem;
+            font-weight: 700;
+            letter-spacing: 0.04em;
+            text-transform: uppercase;
+            margin-bottom: 0.25rem;
+        }
+
+        .table-skeleton {
+            height: 16px;
+            border-radius: 6px;
+            background: linear-gradient(90deg, rgba(51, 65, 85, 0.45) 20%, rgba(71, 85, 105, 0.85) 50%, rgba(51, 65, 85, 0.45) 80%);
+            background-size: 220% 100%;
+            animation: shimmer 1.3s infinite linear;
+        }
+
+        @keyframes shimmer {
+            0% { background-position: 220% 0; }
+            100% { background-position: -220% 0; }
+        }
+
+        .fade-up {
+            animation: fadeUp .45s ease both;
+        }
+
+        @keyframes fadeUp {
+            from {
+                opacity: 0;
+                transform: translateY(8px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
 
         /* Modal */
@@ -699,6 +1128,13 @@
 </head>
 
 <body class="role-admin" id="appBody">
+    <script>
+        // Protect dashboard: if no token, redirect to login
+        (function () {
+            const token = localStorage.getItem('auth_token');
+            if (!token) window.location.replace('/app/login');
+        })();
+    </script>
 
     <!-- 3D MOUNT ZONE - DASHBOARD HEADER -->
 
@@ -715,7 +1151,7 @@
                     style="font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase; font-weight: 600; padding: 0.5rem 0.75rem; margin-top: 0.5rem;">
                     Core Systems</div>
 
-                <a href="#" class="nav-item active" onclick="switchView('dashboard', this)">
+                <a href="#" class="nav-item active" data-view="dashboard" onclick="switchView('dashboard', this)">
                     <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                             d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z">
@@ -723,14 +1159,14 @@
                     </svg>
                     Dashboard
                 </a>
-                <a href="#" class="nav-item" onclick="switchView('products', this)">
+                <a href="#" class="nav-item" data-view="products" onclick="switchView('products', this)">
                     <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                             d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path>
                     </svg>
                     Product Engine
                 </a>
-                <a href="#" class="nav-item" onclick="switchView('ai', this)">
+                <a href="#" class="nav-item" data-view="ai" onclick="switchView('ai', this)">
                     <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                             d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z">
@@ -738,7 +1174,7 @@
                     </svg>
                     AI Intelligence
                 </a>
-                <a href="#" class="nav-item" onclick="switchView('analytics', this)">
+                <a href="#" class="nav-item" data-view="analytics" onclick="switchView('analytics', this)">
                     <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                             d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z">
@@ -750,7 +1186,7 @@
                 <div
                     style="font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase; font-weight: 600; padding: 0.5rem 0.75rem; margin-top: 1rem;">
                     Settings</div>
-                <a href="#" class="nav-item" onclick="switchView('alerts', this)">
+                <a href="#" class="nav-item" data-view="alerts" onclick="switchView('alerts', this)">
                     <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                             d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9">
@@ -761,10 +1197,10 @@
             </div>
 
             <div class="user-profile">
-                <div class="avatar">J</div>
+                <div class="avatar" id="userAvatar">U</div>
                 <div style="flex-grow: 1;">
-                    <div style="font-weight: 600; color: var(--text-main);">John Doe</div>
-                    <div style="color: var(--text-muted); font-size: 0.75rem; margin-top: 2px;">Simulator Admin</div>
+                    <div id="currentUserName" style="font-weight: 600; color: var(--text-main);">Loading user...</div>
+                    <div id="currentUserEmail" style="color: var(--text-muted); font-size: 0.75rem; margin-top: 2px;">-</div>
                 </div>
             </div>
         </aside>
@@ -777,6 +1213,8 @@
                 <div class="header-title" id="headerTitle">Dashboard / Overview</div>
 
                 <div class="header-actions">
+                    <div id="headerUserLabel" style="font-size: 0.8rem; color: var(--text-muted);"></div>
+                    <div class="last-updated"><span class="last-updated-dot"></span><span id="lastUpdatedText">Last updated just now</span></div>
                     <div style="display: flex; align-items: center; gap: 8px;">
                         <span style="font-size: 0.75rem; color: var(--text-muted);">Simulated Role:</span>
                         <select id="roleSelector" class="form-control"
@@ -801,85 +1239,78 @@
                                 <span style="color: var(--accent); font-size: 0.75rem; cursor: pointer;">Mark all
                                     read</span>
                             </div>
-                            <div class="dropdown-item">
-                                <strong style="color: var(--risk-high); display: block; margin-bottom: 2px;">CRITICAL: 2
-                                    Items Expiring</strong>
-                                Action required for Industrial Dairy Batch A.
-                            </div>
-                            <div class="dropdown-item">
-                                <strong style="color: var(--risk-med); display: block; margin-bottom: 2px;">WARNING:
-                                    Risk Increased</strong>
-                                Algorithm detected 12% increase in waste likelihood.
-                            </div>
-                            <div class="dropdown-item">
-                                <strong style="color: var(--text-main); display: block; margin-bottom: 2px;">INFO:
-                                    System Sync</strong>
-                                Last ingestion completed at 04:00z.
-                            </div>
+                            <div id="notifItems"></div>
+                        </div>
+                    </div>
+                    <div class="user-menu">
+                        <button class="user-menu-trigger" onclick="toggleUserMenu()">
+                            <span id="headerAvatar" class="header-avatar">U</span>
+                            <span style="font-size: 0.8rem; color: var(--text-muted);">Account</span>
+                            <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                            </svg>
+                        </button>
+                        <div id="userMenuDropdown" class="user-menu-dropdown">
+                            <button class="user-menu-item" onclick="showProfile()">
+                                <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                                </svg>
+                                Profile
+                            </button>
+                            <button class="user-menu-item" onclick="handleLogout()">
+                                <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a2 2 0 01-2 2H5a2 2 0 01-2-2V7a2 2 0 012-2h6a2 2 0 012 2v1"></path>
+                                </svg>
+                                Logout
+                            </button>
                         </div>
                     </div>
                 </div>
             </header>
 
+            <div id="statusBanner" class="status-banner"></div>
+
             <!-- VIEW 1: DASHBOARD -->
             <section id="view-dashboard" class="content active">
                 <div class="kpi-grid">
-                    <div class="card kpi-card">
-                        <div class="kpi-title">Total Active Assets</div>
+                    <div class="card kpi-card fade-up" style="animation-delay: .04s;">
+                        <div class="kpi-title">Total Products</div>
                         <div class="kpi-value" id="kpiTotal">1,248</div>
-                        <div class="kpi-sub positive"><svg width="12" height="12" fill="none" stroke="currentColor"
-                                viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M5 10l7-7m0 0l7 7m-7-7v18"></path>
-                            </svg> 2.4% vs last week</div>
+                        <div class="kpi-sub">Tracked inventory items</div>
                     </div>
-                    <div class="card kpi-card">
-                        <div class="kpi-title">Expiring < 7 Days</div>
-                                <div class="kpi-value" id="kpiExpiring" style="color: var(--risk-high);">12</div>
-                                <div class="kpi-sub negative"><svg width="12" height="12" fill="none"
-                                        stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                            d="M19 14l-7 7m0 0l-7-7m7 7V3"></path>
-                                    </svg> Requires action</div>
-                        </div>
-                        <div class="card kpi-card">
-                            <div class="kpi-title">High Risk Flags</div>
-                            <div class="kpi-value" id="kpiRisk">4</div>
-                            <div class="kpi-sub negative">AI detected anomalies</div>
-                        </div>
-                        <div class="card kpi-card">
-                            <div class="kpi-title">Est. Loss Value</div>
-                            <div class="kpi-value">$8.4K</div>
-                            <div class="kpi-sub">Predicted 30-day waste</div>
-                        </div>
+                    <div class="card kpi-card fade-up" style="animation-delay: .08s;">
+                        <div class="kpi-title">Expiring Soon</div>
+                        <div class="kpi-value" id="kpiSoon" style="color: var(--risk-med);">12</div>
+                        <div class="kpi-sub">Within next 7 days</div>
+                    </div>
+                    <div class="card kpi-card fade-up" style="animation-delay: .12s;">
+                        <div class="kpi-title">Expired</div>
+                        <div class="kpi-value" id="kpiExpired" style="color: var(--risk-high);">4</div>
+                        <div class="kpi-sub">Needs immediate action</div>
+                    </div>
+                    <div class="card kpi-card fade-up" style="animation-delay: .16s;">
+                        <div class="kpi-title">Alerts</div>
+                        <div class="kpi-value" id="kpiAlerts">16</div>
+                        <div class="kpi-sub">Expired + expiring soon</div>
+                    </div>
                     </div>
 
                     <div class="dashboard-main-grid">
-                        <div class="card" style="padding: 1.5rem;">
+                        <div class="card fade-up" style="padding: 1.5rem; animation-delay: .2s;">
                             <h3>Asset Expiry Trend</h3>
-                            <div class="chart-placeholder">
-                                [ HTML Canvas / JS Chart Mount Point ]<br>
-                                Showing 30-day forward trajectory
+                            <div class="chart-wrap">
+                                <canvas id="expiryTrendChart"></canvas>
                             </div>
                         </div>
-                        <div class="card alert-panel">
+                        <div class="card alert-panel fade-up" style="animation-delay: .24s;">
                             <h3>Active Operations Alerts</h3>
-                            <div class="alert-item high">
-                                <strong>12 items expiring this week</strong>
-                                <div style="color: var(--text-muted); font-size: 0.75rem; margin-top: 4px;">Initiate
-                                    liquidation protocol.</div>
-                            </div>
-                            <div class="alert-item high">
-                                <strong>4 high-risk SKUs detected</strong>
-                                <div style="color: var(--text-muted); font-size: 0.75rem; margin-top: 4px;">Supply chain
-                                    delay probable.</div>
-                            </div>
-                            <div class="alert-item warn">
-                                <strong>Category: Perishables risk +12%</strong>
-                                <div style="color: var(--text-muted); font-size: 0.75rem; margin-top: 4px;">Historical
-                                    weather pattern correlation.</div>
-                            </div>
+                            <div id="operationsAlerts"></div>
                         </div>
+                    </div>
+
+                    <div class="card fade-up" style="margin-top: 1.5rem; animation-delay: .28s;">
+                        <h3>Recent Activity</h3>
+                        <div id="recentActivityList" style="display: flex; flex-direction: column; gap: 0.75rem;"></div>
                     </div>
             </section>
 
@@ -908,6 +1339,19 @@
                             </svg>
                             Register Asset
                         </button>
+                    </div>
+                </div>
+
+                <div style="display: flex; justify-content: space-between; gap: 1rem; align-items: center; margin-bottom: 1rem; flex-wrap: wrap;">
+                    <div style="display: flex; gap: 0.5rem; align-items: center;">
+                        <input type="text" id="searchInput" class="form-control" placeholder="Search by product name..." style="min-width: 260px;" />
+                        <button class="btn" onclick="applySearch()">Search</button>
+                        <button class="btn" onclick="clearSearch()">Clear</button>
+                    </div>
+                    <div style="display: flex; gap: 0.5rem; align-items: center;">
+                        <button class="btn" id="prevPageBtn" onclick="goToPreviousPage()">Previous</button>
+                        <span id="paginationInfo" style="color: var(--text-muted); font-size: 0.85rem;">Page 1 of 1</span>
+                        <button class="btn" id="nextPageBtn" onclick="goToNextPage()">Next</button>
                     </div>
                 </div>
 
@@ -1095,29 +1539,554 @@
         </div>
     </div>
 
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
     <script>
         // State
+        const PRODUCT_API_BASE = '/api/v1/products';
+        const ALERT_API_BASE = '/api/v1/products/alerts?soon_days=7';
+        const LOGS_API_BASE = '/api/v1/logs';
         let currentRole = 'admin'; // admin | manager | viewer
-        let products = [
-            { id: 1, name: "Industrial Dairy Bulk", category: "Dairy", qty: 250, expiry: new Date(Date.now() + 5 * 86400000).toISOString().split('T')[0] },
-            { id: 2, name: "Cleaning Solvent 90X", category: "Chemicals", qty: 40, expiry: new Date(Date.now() + 15 * 86400000).toISOString().split('T')[0] },
-            { id: 3, name: "Warehouse Backup Server", category: "Hardware", qty: 2, expiry: new Date(Date.now() + 300 * 86400000).toISOString().split('T')[0] }
-        ];
+        let products = [];
+        let activityLogs = [];
+        let currentUser = null;
+        let alerts = {
+            counts: {
+                expired: 0,
+                expiring_soon: 0,
+                total_alerts: 0
+            },
+            expired: [],
+            expiring_soon: []
+        };
+        let currentPage = 1;
+        const pageLimit = 10;
+        let totalPages = 1;
+        let currentSearch = '';
+        let expiryTrendChart = null;
+        let notificationItems = [];
+        const notificationReadState = {};
+
+        function getAuthToken() {
+            return localStorage.getItem('auth_token');
+        }
+
+        function setStatus(message, type = 'info', autoHide = false) {
+            const banner = document.getElementById('statusBanner');
+            if (!banner) return;
+
+            if (!message) {
+                banner.style.display = 'none';
+                banner.innerText = '';
+                banner.className = 'status-banner';
+                return;
+            }
+
+            banner.innerText = message;
+            banner.className = `status-banner ${type}`;
+            banner.style.display = 'block';
+
+            if (autoHide) {
+                setTimeout(() => {
+                    setStatus('');
+                }, 2200);
+            }
+        }
+
+        function updateLastUpdated() {
+            const el = document.getElementById('lastUpdatedText');
+            if (!el) return;
+            const now = new Date();
+            el.innerText = `Last updated ${now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
+        }
+
+        function getAuthHeaders() {
+            const token = getAuthToken();
+            if (!token) {
+                window.location.replace('/app/login');
+                throw new Error('Authentication required');
+            }
+
+            return {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            };
+        }
+
+        async function apiRequest(url, options = {}) {
+            const response = await fetch(url, {
+                ...options,
+                headers: {
+                    ...getAuthHeaders(),
+                    ...(options.headers || {})
+                }
+            });
+
+            if (response.status === 401) {
+                localStorage.removeItem('auth_token');
+                window.location.replace('/app/login');
+                throw new Error('Session expired. Please login again.');
+            }
+
+            const body = await response.json().catch(() => ({}));
+
+            if (!response.ok) {
+                throw new Error(body.detail || body.message || 'Request failed');
+            }
+
+            return body;
+        }
+
+        function mapApiProduct(product) {
+            return {
+                id: product.id,
+                name: product.product_name,
+                category: 'General',
+                qty: Number.isFinite(product.price) ? product.price.toFixed(2) : '-',
+                expiry: product.expiry_date,
+                expiry_status: product.expiry_status,
+                days_left: product.days_left,
+                manufacture_date: product.manufacture_date,
+                price: product.price
+            };
+        }
+
+        function updatePaginationControls() {
+            const paginationInfo = document.getElementById('paginationInfo');
+            const prevPageBtn = document.getElementById('prevPageBtn');
+            const nextPageBtn = document.getElementById('nextPageBtn');
+
+            if (paginationInfo) {
+                paginationInfo.innerText = `Page ${currentPage} of ${totalPages}`;
+            }
+
+            if (prevPageBtn) prevPageBtn.disabled = currentPage <= 1;
+            if (nextPageBtn) nextPageBtn.disabled = currentPage >= totalPages;
+        }
+
+        async function loadProducts() {
+            const tbody = document.getElementById('productTableBody');
+            tbody.innerHTML = `
+                <tr><td colspan="6"><div class="table-skeleton"></div></td></tr>
+                <tr><td colspan="6"><div class="table-skeleton"></div></td></tr>
+                <tr><td colspan="6"><div class="table-skeleton"></div></td></tr>
+            `;
+            setStatus('Loading products...', 'info');
+
+            const params = new URLSearchParams({
+                page: String(currentPage),
+                limit: String(pageLimit)
+            });
+
+            if (currentSearch) {
+                params.append('search', currentSearch);
+            }
+
+            const payload = await apiRequest(`${PRODUCT_API_BASE}?${params.toString()}`);
+            const receivedTotalPages = payload.pagination?.total_pages || 1;
+
+            if (currentPage > receivedTotalPages) {
+                currentPage = receivedTotalPages;
+                return await loadProducts();
+            }
+
+            products = payload.data.map(mapApiProduct);
+            totalPages = receivedTotalPages;
+            renderTable();
+            updatePaginationControls();
+            await loadAlerts();
+            await loadActivityLogs();
+            updateExpiryTrendChart();
+            updateLastUpdated();
+            setStatus('Products loaded successfully.', 'success', true);
+        }
+
+        async function loadActivityLogs() {
+            const payload = await apiRequest(`${LOGS_API_BASE}?limit=15`);
+            activityLogs = payload.data || [];
+            renderRecentActivity();
+        }
+
+        function applySearch() {
+            const value = document.getElementById('searchInput').value.trim();
+            currentSearch = value;
+            currentPage = 1;
+            loadProducts().catch((error) => setStatus(error.message, 'error'));
+        }
+
+        function clearSearch() {
+            document.getElementById('searchInput').value = '';
+            currentSearch = '';
+            currentPage = 1;
+            loadProducts().catch((error) => setStatus(error.message, 'error'));
+        }
+
+        function goToPreviousPage() {
+            if (currentPage <= 1) return;
+            currentPage -= 1;
+            loadProducts().catch((error) => setStatus(error.message, 'error'));
+        }
+
+        function goToNextPage() {
+            if (currentPage >= totalPages) return;
+            currentPage += 1;
+            loadProducts().catch((error) => setStatus(error.message, 'error'));
+        }
+
+        async function loadAlerts() {
+            const data = await apiRequest(ALERT_API_BASE);
+            alerts = data;
+            renderAlerts();
+        }
+
+        function renderCurrentUser() {
+            if (!currentUser) return;
+
+            const userName = currentUser.name || 'User';
+            const userEmail = currentUser.email || '-';
+            const avatar = (userName.trim()[0] || 'U').toUpperCase();
+
+            const currentUserName = document.getElementById('currentUserName');
+            const currentUserEmail = document.getElementById('currentUserEmail');
+            const userAvatar = document.getElementById('userAvatar');
+            const headerUserLabel = document.getElementById('headerUserLabel');
+            const headerAvatar = document.getElementById('headerAvatar');
+
+            if (currentUserName) currentUserName.innerText = userName;
+            if (currentUserEmail) currentUserEmail.innerText = userEmail;
+            if (userAvatar) userAvatar.innerText = avatar;
+            if (headerUserLabel) headerUserLabel.innerText = `Logged in as ${userEmail}`;
+            if (headerAvatar) headerAvatar.innerText = avatar;
+        }
+
+        async function validateSession() {
+            currentUser = await apiRequest('/api/v1/auth/me');
+            renderCurrentUser();
+        }
+
+        function renderRecentActivity() {
+            const container = document.getElementById('recentActivityList');
+            if (!container) return;
+
+            if (!activityLogs.length) {
+                container.innerHTML = '<div class="alert-item warn"><strong>No activity yet</strong><div style="color: var(--text-muted); font-size: 0.75rem; margin-top: 4px;">Recent events will appear here.</div></div>';
+                return;
+            }
+
+            const iconMap = {
+                USER_LOGIN: { cls: 'login', icon: '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 3h4a2 2 0 012 2v14a2 2 0 01-2 2h-4m-4-4l4-4m0 0l-4-4m4 4H3"></path>' },
+                PRODUCT_CREATE: { cls: 'create', icon: '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>' },
+                PRODUCT_DELETE: { cls: 'delete', icon: '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7L5 21M5 7l14 14"></path>' },
+                EXPIRY_NOTICE: { cls: 'notice', icon: '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01M10.29 3.86l-7.4 12.8A1 1 0 003.75 18h16.5a1 1 0 00.86-1.34l-7.4-12.8a1 1 0 00-1.72 0z"></path>' }
+            };
+
+            container.innerHTML = `<div class="timeline">${activityLogs.map((log) => {
+                const at = timeAgo(log.timestamp);
+                const mapped = iconMap[log.action] || iconMap.EXPIRY_NOTICE;
+                return `
+                    <div class="timeline-item">
+                        <span class="timeline-icon ${mapped.cls}">
+                            <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24">${mapped.icon}</svg>
+                        </span>
+                        <div class="timeline-content">
+                            <div class="timeline-title">${log.action.replace('_', ' ')}</div>
+                            <div style="color: var(--text-muted); font-size: 0.78rem;">${log.description}</div>
+                            <div style="color: var(--text-muted); font-size: 0.72rem; margin-top: 4px;">${at}</div>
+                        </div>
+                    </div>
+                `;
+            }).join('')}</div>`;
+        }
+
+        function showProfile() {
+            if (!currentUser) return;
+            setStatus(`Profile: ${currentUser.name} (${currentUser.email})`, 'info', true);
+            const menu = document.getElementById('userMenuDropdown');
+            if (menu) menu.classList.remove('show');
+        }
+
+        function toggleUserMenu() {
+            const menu = document.getElementById('userMenuDropdown');
+            if (menu) menu.classList.toggle('show');
+        }
+
+        function timeAgo(timestamp) {
+            const raw = String(timestamp || '');
+            const utcLike = /(Z|[+-]\d{2}:\d{2})$/.test(raw) ? raw : `${raw}Z`;
+            const dt = new Date(utcLike);
+            const now = new Date();
+            const diffMs = now - dt;
+            const min = Math.floor(diffMs / 60000);
+            const hr = Math.floor(diffMs / 3600000);
+            const day = Math.floor(diffMs / 86400000);
+
+            if (min < 1) return 'now';
+            if (min < 60) return `${min} min ago`;
+            if (hr < 24) return `${hr} hour${hr > 1 ? 's' : ''} ago`;
+            if (day === 1) return '1 day ago';
+            if (day < 7) return `${day} days ago`;
+            return dt.toLocaleDateString();
+        }
+
+        function markNotificationAsRead(type, id) {
+            const key = getNotificationKey({ type, id });
+            notificationReadState[key] = true;
+            notificationItems = notificationItems.map(item =>
+                item.key === key ? { ...item, read: true } : item
+            );
+            updateNotificationBadge();
+            renderNotificationDropdown();
+        }
+
+        function onNotificationClick(type, id) {
+            markNotificationAsRead(type, id);
+            focusProductRow(id);
+        }
+
+        function getNotificationKey(item) {
+            return `${item.type}-${item.id}`;
+        }
+
+        function rebuildNotificationItems() {
+            const expiredItems = (alerts.expired || []).map(item => ({
+                ...item,
+                type: 'expired',
+                key: getNotificationKey({ type: 'expired', id: item.id })
+            }));
+
+            const expiringItems = (alerts.expiring_soon || []).map(item => ({
+                ...item,
+                type: 'soon',
+                key: getNotificationKey({ type: 'soon', id: item.id })
+            }));
+
+            notificationItems = [...expiredItems, ...expiringItems].map(item => ({
+                ...item,
+                read: Boolean(notificationReadState[item.key])
+            }));
+        }
+
+        function updateNotificationBadge() {
+            const notifCount = document.getElementById('notifCount');
+            if (!notifCount) return;
+
+            const unreadCount = notificationItems.filter(item => !item.read).length;
+            notifCount.innerText = unreadCount;
+            notifCount.style.display = unreadCount > 0 ? 'flex' : 'none';
+        }
+
+        function markAllNotificationsAsRead() {
+            notificationItems.forEach(item => {
+                item.read = true;
+                notificationReadState[item.key] = true;
+            });
+
+            renderNotificationDropdown();
+            updateNotificationBadge();
+        }
+
+        function renderNotificationDropdown() {
+            const notifItemsContainer = document.getElementById('notifItems');
+            if (!notifItemsContainer) return;
+
+            const expired = notificationItems.filter(item => item.type === 'expired');
+            const soon = notificationItems.filter(item => item.type === 'soon');
+
+            notifItemsContainer.innerHTML = `
+                <div class="notif-section-title">Expired</div>
+                ${(expired.length ? expired : [{ product_name: 'None', days_left: 0, read: true }]).map(item => `
+                    <div class="dropdown-item ${item.product_name === 'None' ? '' : 'notif-clickable'}" ${item.product_name === 'None' ? '' : `onclick="onNotificationClick('expired', ${item.id})"`} style="${!item.read ? 'border-left: 2px solid var(--risk-high);' : ''}">
+                        <strong style="color: var(--risk-high); display: block; margin-bottom: 2px;">${item.product_name}</strong>
+                        ${item.product_name === 'None' ? 'No expired products' : `Expired ${Math.abs(item.days_left)} day(s) ago.`}
+                    </div>
+                `).join('')}
+                <div class="notif-section-title">Expiring Soon</div>
+                ${(soon.length ? soon : [{ product_name: 'None', days_left: 0, read: true }]).map(item => `
+                    <div class="dropdown-item ${item.product_name === 'None' ? '' : 'notif-clickable'}" ${item.product_name === 'None' ? '' : `onclick="onNotificationClick('soon', ${item.id})"`} style="${!item.read ? 'border-left: 2px solid var(--risk-med);' : ''}">
+                        <strong style="color: var(--risk-med); display: block; margin-bottom: 2px;">${item.product_name}</strong>
+                        ${item.product_name === 'None' ? 'No near-expiry products' : `${item.days_left} day(s) left before expiry.`}
+                    </div>
+                `).join('')}
+            `;
+        }
+
+        function bindMarkAllReadAction() {
+            const markAllReadEl = document.querySelector('.dropdown-header span[style*="cursor: pointer"]');
+            if (!markAllReadEl) return;
+
+            markAllReadEl.addEventListener('click', (event) => {
+                event.stopPropagation();
+                markAllNotificationsAsRead();
+            });
+        }
+
+        function focusProductRow(productId) {
+            const productsNav = document.querySelector('.nav-item[data-view="products"]');
+            switchView('products', productsNav);
+
+            const notifDropdown = document.getElementById('notifDropdown');
+            if (notifDropdown) notifDropdown.classList.remove('show');
+
+            const rowId = `product-row-${productId}`;
+            const row = document.getElementById(rowId);
+            if (!row) {
+                setStatus('Product is not visible on this page. Use search to find it.', 'info', true);
+                return;
+            }
+
+            row.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            row.classList.add('row-highlight');
+            setTimeout(() => row.classList.remove('row-highlight'), 1800);
+        }
+
+        function handleLogout() {
+            localStorage.removeItem('auth_token');
+            window.location.replace('/app/login');
+        }
+
+        function renderAlerts() {
+            const operationsAlerts = document.getElementById('operationsAlerts');
+
+            if ((alerts.counts.total_alerts || 0) === 0) {
+                notificationItems = [];
+                renderNotificationDropdown();
+                updateNotificationBadge();
+
+                operationsAlerts.innerHTML = `
+                    <div class="alert-item warn">
+                        <strong>No active expiry alerts</strong>
+                        <div style="color: var(--text-muted); font-size: 0.75rem; margin-top: 4px;">Inventory is currently in a safe state.</div>
+                    </div>
+                `;
+                return;
+            }
+
+            rebuildNotificationItems();
+            renderNotificationDropdown();
+            updateNotificationBadge();
+
+            operationsAlerts.innerHTML = `
+                <div class="alert-item high">
+                    <strong>${alerts.counts.expired} expired item(s)</strong>
+                    <div style="color: var(--text-muted); font-size: 0.75rem; margin-top: 4px;">Immediate action required.</div>
+                </div>
+                <div class="alert-item warn">
+                    <strong>${alerts.counts.expiring_soon} item(s) expiring in 7 days</strong>
+                    <div style="color: var(--text-muted); font-size: 0.75rem; margin-top: 4px;">Schedule replenishment or usage plan.</div>
+                </div>
+            `;
+
+            updateDashboardKPIs();
+        }
+
+        function updateExpiryTrendChart() {
+            if (typeof Chart === 'undefined') return;
+
+            const canvas = document.getElementById('expiryTrendChart');
+            if (!canvas) return;
+
+            const labels = ['Overdue', '0-7 days', '8-14 days', '15-30 days', '31+ days'];
+            const buckets = {
+                overdue: 0,
+                week1: 0,
+                week2: 0,
+                month: 0,
+                later: 0
+            };
+
+            products.forEach((product) => {
+                const fallbackDays = calculateRisk(product.expiry, product.expiry_status).days;
+                const days = Number.isFinite(product.days_left) ? product.days_left : fallbackDays;
+
+                if (days < 0) buckets.overdue += 1;
+                else if (days <= 7) buckets.week1 += 1;
+                else if (days <= 14) buckets.week2 += 1;
+                else if (days <= 30) buckets.month += 1;
+                else buckets.later += 1;
+            });
+
+            const dataPoints = [
+                buckets.overdue,
+                buckets.week1,
+                buckets.week2,
+                buckets.month,
+                buckets.later
+            ];
+
+            if (expiryTrendChart) {
+                expiryTrendChart.data.labels = labels;
+                expiryTrendChart.data.datasets[0].data = dataPoints;
+                expiryTrendChart.update();
+                return;
+            }
+
+            expiryTrendChart = new Chart(canvas, {
+                type: 'line',
+                data: {
+                    labels,
+                    datasets: [{
+                        label: 'Expiry Risk Trend',
+                        data: dataPoints,
+                        borderColor: '#22d3ee',
+                        backgroundColor: 'rgba(34, 211, 238, 0.18)',
+                        fill: true,
+                        tension: 0.35,
+                        pointRadius: 3,
+                        pointBackgroundColor: '#67e8f9',
+                        pointBorderColor: '#083344'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false }
+                    },
+                    scales: {
+                        x: {
+                            ticks: { color: '#94a3b8', font: { size: 11 } },
+                            grid: { color: 'rgba(148, 163, 184, 0.08)' }
+                        },
+                        y: {
+                            ticks: { color: '#94a3b8', precision: 0, font: { size: 11 } },
+                            grid: { color: 'rgba(148, 163, 184, 0.08)' },
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+        }
 
         // Init
-        document.addEventListener('DOMContentLoaded', () => {
+        document.addEventListener('DOMContentLoaded', async () => {
             updateRole();
-            renderTable();
+            bindMarkAllReadAction();
 
             // Default date logic for modal
             document.getElementById('pDate').min = new Date().toISOString().split('T')[0];
+            document.getElementById('searchInput').addEventListener('keydown', (event) => {
+                if (event.key === 'Enter') {
+                    event.preventDefault();
+                    applySearch();
+                }
+            });
+
+            try {
+                await validateSession();
+                await loadProducts();
+            } catch (error) {
+                setStatus(error.message, 'error');
+                const tbody = document.getElementById('productTableBody');
+                tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; color: var(--risk-high);">${error.message}</td></tr>`;
+            }
         });
 
         // View Router
         function switchView(viewId, el) {
             // Update nav state
             document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-            el.classList.add('active');
+            const targetNav = el || document.querySelector(`.nav-item[data-view="${viewId}"]`);
+            if (targetNav) targetNav.classList.add('active');
 
             // Hide all views
             document.querySelectorAll('.content').forEach(c => c.classList.remove('active'));
@@ -1147,6 +2116,11 @@
                 const drop = document.getElementById('notifDropdown');
                 if (drop && drop.classList.contains('show')) drop.classList.remove('show');
             }
+
+            if (!event.target.closest('.user-menu')) {
+                const userMenu = document.getElementById('userMenuDropdown');
+                if (userMenu && userMenu.classList.contains('show')) userMenu.classList.remove('show');
+            }
         }
 
         // Role & Auth Simulation
@@ -1163,11 +2137,15 @@
         }
 
         // Logic & Math
-        function calculateRisk(dateString) {
+        function calculateRisk(dateString, statusFromApi = null) {
             const today = new Date();
             const expiry = new Date(dateString);
             const diffTime = expiry - today;
             const daysToExpiry = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+            if (statusFromApi === 'expired') return { label: 'HIGH RISK', class: 'bg-high', days: daysToExpiry };
+            if (statusFromApi === 'near_expiry') return { label: 'Medium', class: 'bg-med', days: daysToExpiry };
+            if (statusFromApi === 'safe') return { label: 'Low', class: 'bg-low', days: daysToExpiry };
 
             if (daysToExpiry < 10) return { label: 'HIGH RISK', class: 'bg-high', days: daysToExpiry };
             if (daysToExpiry <= 30) return { label: 'Medium', class: 'bg-med', days: daysToExpiry };
@@ -1176,19 +2154,15 @@
 
         function updateDashboardKPIs() {
             document.getElementById('kpiTotal').innerText = products.length;
+            document.getElementById('kpiSoon').innerText = alerts?.counts?.expiring_soon || 0;
+            document.getElementById('kpiExpired').innerText = alerts?.counts?.expired || 0;
+            document.getElementById('kpiAlerts').innerText = alerts?.counts?.total_alerts || 0;
+        }
 
-            let highCount = 0;
-            let medCount = 0;
-
-            products.forEach(p => {
-                const risk = calculateRisk(p.expiry);
-                if (risk.class === 'bg-high') highCount++;
-                if (risk.class === 'bg-med') medCount++;
-            });
-
-            document.getElementById('kpiExpiring').innerText = highCount;
-            document.getElementById('kpiRisk').innerText = (highCount + medCount);
-            document.getElementById('notifCount').innerText = highCount;
+        function getStatusPill(status) {
+            if (status === 'expired') return { cls: 'expired', label: 'Expired' };
+            if (status === 'near_expiry') return { cls: 'expiring', label: 'Expiring' };
+            return { cls: 'safe', label: 'Safe' };
         }
 
         // Table Rendering
@@ -1196,31 +2170,52 @@
             const tbody = document.getElementById('productTableBody');
             tbody.innerHTML = '';
 
+            if (products.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="6">
+                            <div class="empty-state">
+                                <div class="empty-state-icon">
+                                    <svg width="22" height="22" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10"></path>
+                                    </svg>
+                                </div>
+                                <div class="empty-state-title">No products yet</div>
+                                <div class="empty-state-text">Add your first product to start monitoring expiry risk.</div>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+                updateDashboardKPIs();
+                return;
+            }
+
             products.forEach((p, index) => {
-                const risk = calculateRisk(p.expiry);
+                const risk = calculateRisk(p.expiry, p.expiry_status);
+                const statusPill = getStatusPill(p.expiry_status);
 
                 // Construct Action Buttons based on Role
                 let actionsHTML = '';
                 if (currentRole !== 'viewer') {
-                    actionsHTML += `<button class="btn req-manager" style="padding: 0.2rem 0.6rem;" onclick="editProduct(${index})">Edit</button>`;
+                    actionsHTML += `<button class="btn req-manager icon-btn" title="Edit" onclick="editProduct(${index})"><svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg></button>`;
                 }
                 if (currentRole === 'admin') {
-                    actionsHTML += `<button class="btn req-admin" style="padding: 0.2rem 0.6rem; color: var(--risk-high); border-color: rgba(239, 68, 68, 0.3);" onclick="deleteProduct(${index})">Del</button>`;
+                    actionsHTML += `<button class="btn req-admin icon-btn delete" title="Delete" onclick="deleteProduct(${index})"><svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 7h12M9 7V4h6v3m-7 0l1 13h6l1-13"></path></svg></button>`;
                 }
                 if (currentRole === 'viewer') {
                     actionsHTML = '<span style="color: var(--text-muted); font-size: 0.75rem;">Restricted</span>';
                 }
 
                 tbody.innerHTML += `
-                    <tr>
+                    <tr id="product-row-${p.id}" data-product-id="${p.id}">
                         <td style="font-weight: 500;">${p.name}</td>
                         <td><span class="tag">${p.category}</span></td>
                         <td>${p.qty}</td>
                         <td>${p.expiry} <span style="font-size: 0.7rem; color: var(--text-muted);">(${risk.days}d)</span></td>
                         <td>
-                            <div style="display: flex; align-items: center;">
-                                <span class="risk-dot ${risk.class}"></span>
-                                ${risk.label}
+                            <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                <span class="status-pill ${statusPill.cls}">${statusPill.label}</span>
+                                <span style="font-size: 0.75rem; color: var(--text-muted);">${risk.label}</span>
                             </div>
                         </td>
                         <td><div class="action-flex">${actionsHTML}</div></td>
@@ -1243,32 +2238,52 @@
             document.getElementById('productModal').classList.remove('active');
         }
 
-        function saveProduct() {
+        async function saveProduct() {
             const index = document.getElementById('editIndex').value;
             const form = document.getElementById('productForm');
+            const saveButton = document.querySelector('.modal-footer .btn-primary');
 
             if (!form.checkValidity()) {
                 form.reportValidity();
                 return;
             }
 
-            const p = {
-                id: Date.now(),
-                name: document.getElementById('pName').value,
-                category: document.getElementById('pCat').value,
-                qty: parseInt(document.getElementById('pQty').value, 10),
-                expiry: document.getElementById('pDate').value
-            };
-
-            if (index === '-1') {
-                products.push(p);
-            } else {
-                p.id = products[index].id;
-                products[index] = p;
+            if (index !== '-1') {
+                setStatus('Edit API is not available yet. Please delete and recreate the product.', 'error');
+                return;
             }
 
-            renderTable();
-            closeModal();
+            const priceValue = parseFloat(document.getElementById('pQty').value || '0');
+            const today = new Date().toISOString().split('T')[0];
+
+            const payload = {
+                product_name: document.getElementById('pName').value,
+                manufacture_date: today,
+                expiry_date: document.getElementById('pDate').value,
+                price: priceValue
+            };
+
+            try {
+                if (saveButton) {
+                    saveButton.disabled = true;
+                    saveButton.innerText = 'Saving...';
+                }
+                await apiRequest(PRODUCT_API_BASE, {
+                    method: 'POST',
+                    body: JSON.stringify(payload)
+                });
+                closeModal();
+                currentPage = 1;
+                await loadProducts();
+                setStatus('Product created successfully.', 'success', true);
+            } catch (error) {
+                setStatus(error.message, 'error');
+            } finally {
+                if (saveButton) {
+                    saveButton.disabled = false;
+                    saveButton.innerText = 'Save Asset Record';
+                }
+            }
         }
 
         function editProduct(index) {
@@ -1283,10 +2298,19 @@
             document.getElementById('productModal').classList.add('active');
         }
 
-        function deleteProduct(index) {
-            if (confirm('Are you sure you want to completely remove this asset record from the system?')) {
-                products.splice(index, 1);
-                renderTable();
+        async function deleteProduct(index) {
+            const target = products[index];
+            if (confirm(`Delete product "${target.name}"? This action cannot be undone.`)) {
+                try {
+                    setStatus('Deleting product...', 'info');
+                    await apiRequest(`${PRODUCT_API_BASE}/${target.id}`, {
+                        method: 'DELETE'
+                    });
+                    await loadProducts();
+                    setStatus('Product deleted successfully.', 'success', true);
+                } catch (error) {
+                    setStatus(error.message, 'error');
+                }
             }
         }
     </script>
