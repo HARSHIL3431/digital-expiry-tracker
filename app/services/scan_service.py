@@ -67,9 +67,9 @@ class ScanService:
             db = SessionLocal()
             try:
                 scan_record = ScanResult(
-                    expiry_date=expiry_date,
-                    days_left=days_left,
-                    status=status,
+                    image_path=image_path,
+                    detected_expiry=expiry_date.isoformat(),
+                    confidence=str(suggested_expiry.get("confidence", 0.0)),
                     extracted_text=" ".join(ocr_texts) if ocr_texts else None,
                 )
                 db.add(scan_record)

@@ -1,216 +1,136 @@
-# 🚀 Digital Expiry Tracker
+# Digital Expiry Tracker
 
-### AI-Assisted Expiry Management for Food & Medicine
+AI-assisted expiry management for food and medicine inventory using FastAPI + OCR + HTML/CSS/JS dashboard.
 
----
+## Overview
 
-## 📌 What is Digital Expiry Tracker?
+Digital Expiry Tracker helps users:
+- Scan and parse expiry dates from product images
+- Track expiry timelines in a centralized inventory
+- Detect expired and near-expiry products
+- View alerts and risk indicators in a dashboard
 
-**Digital Expiry Tracker** is a smart web application that helps users track the expiry dates of **food and medicine items** using **OCR (Optical Character Recognition)** and automated reminders.
+## Current Tech Stack
 
-It prevents health risks caused by expired products and reduces unnecessary wastage by providing timely alerts and a centralized digital inventory.
+- Backend: FastAPI, SQLAlchemy, Pydantic
+- Auth: JWT (Bearer token)
+- Database: SQLite (default), configurable with `DATABASE_URL`
+- OCR: Tesseract / EasyOCR pipeline (optional heavy dependencies)
+- Frontend: Vanilla HTML, CSS, JavaScript
 
-> **Simply put:**  
-> Scan → Track → Get reminded → Stay safe.
+## Project Structure
 
----
-
-## ❌ The Problem
-
-Expiry management today is mostly manual and inefficient:
-
-- ⏳ People forget expiry dates
-- 🗑️ Food and medicines get wasted
-- ⚠️ Health risks due to expired consumption
-- 📄 No centralized digital tracking
-- 😕 Manual checking is time-consuming
-
----
-
-## ✅ Our Solution
-
-**Digital Expiry Tracker provides:**
-
-1. 📷 **OCR-Based Scanning** – Extract expiry dates from images  
-2. 📦 **Digital Inventory** – Manage all products in one place  
-3. ⏰ **Automated Reminders** – Alerts before items expire  
-4. 📊 **Expiry Dashboard** – Upcoming & expired item tracking  
-5. 🔐 **Reliable Backend APIs** – Secure and validated data handling  
-
----
-
-## 🧠 How OCR Works
-
-1. User uploads product image  
-2. Image is preprocessed (resize, grayscale)  
-3. OCR engine extracts text  
-4. Expiry date is detected using pattern matching  
-5. Date is stored in database  
-
-> OCR integration is designed to be **modular and scalable**.
-
----
-
-## 🔄 How It Works (User Journey)
-
-Add Product (Image / Manual Entry)
-↓
-
-OCR extracts expiry date
-↓
-
-Backend validates data
-↓
-
-Product stored in database
-↓
-
-System monitors expiry timeline
-↓
-
-User receives reminder before expiry
-
-
----
-
-## 🎯 Core Features
-
-### 👤 For Users
-- ✅ Add food & medicine items
-- ✅ OCR-based expiry detection
-- ✅ Expiry countdown tracking
-- ✅ Reminder notifications
-- ✅ Simple & clean interface
-
-### 🛠️ For System
-- ✅ Product CRUD APIs
-- ✅ Input validation
-- ✅ Error handling
-- ✅ Scalable architecture
-
----
-
-## 🧱 Technology Stack
-
-| Component | Technology |
-|---------|-----------|
-| Backend | FastAPI (Python) |
-| OCR | Tesseract OCR |
-| Image Processing | OpenCV |
-| Database | SQLite / PostgreSQL |
-| API Docs | Swagger (FastAPI) |
-| Tools | Git, GitHub, Thunder Client |
-
----
-
-## 📂 Project Structure
-
+```text
 digital-expiry-tracker/
-│
-├── backend/
-│ ├── main.py
-│ ├── routers/
-│ ├── models/
-│ ├── schemas/
-│ ├── services/
-│ └── requirements.txt
-│
-├── docs/
-│ └── workflow.md
-│
-├── README.md
-└── .gitignore
+├── app/
+│   ├── api/v1/           # auth, products, scan routers
+│   ├── core/             # config, dependencies, security
+│   ├── schemas/          # request/response models
+│   ├── services/         # expiry + OCR + scan pipeline
+│   ├── utils/            # database + helpers
+│   └── main.py           # FastAPI app entrypoint
+├── frontend/
+│   ├── assets/
+│   └── pages/            # v1, login, register, dashboard
+├── tests/
+├── requirements.txt
+└── README.md
+```
 
+## Demo Credentials
 
----
+A demo user is auto-created at app startup:
+- Email: `test@example.com`
+- Password: `123456`
 
-## ▶️ Setup & Installation
+## Setup (Windows)
 
-### 1️⃣ Clone Repository
+1. Clone and enter project:
+   ```bash
+   git clone <your-repo-url>
+   cd digital-expiry-tracker
+   ```
+
+2. Create and activate virtual environment:
+   ```bash
+   python -m venv venv
+   venv\Scripts\activate
+   ```
+
+3. Install dependencies:
+   ```bash
+   pip install -r requirements.txt
+   ```
+
+4. Create environment file:
+   ```bash
+   copy .env.example .env
+   ```
+
+5. Run the app:
+   ```bash
+   python -m uvicorn app.main:app --reload
+   ```
+
+6. Open:
+   - API docs: `http://127.0.0.1:8000/docs`
+   - Landing page: `http://127.0.0.1:8000/`
+   - Login: `http://127.0.0.1:8000/app/login`
+   - Dashboard: `http://127.0.0.1:8000/app/dashboard`
+
+## Environment Variables
+
+Configured via `.env` using `python-dotenv`:
+
+```env
+SECRET_KEY=replace-with-strong-secret
+JWT_ALGORITHM=HS256
+ACCESS_TOKEN_EXPIRE_MINUTES=60
+ADMIN_EMAIL=admin@det.com
+DATABASE_URL=sqlite:///./expiry_tracker.db
+TESSERACT_PATH=tesseract
+```
+
+## API Summary
+
+### Authentication
+- `POST /api/v1/auth/register`
+- `POST /api/v1/auth/login`
+- `GET /api/v1/auth/me` (JWT required)
+- `POST /api/v1/auth/upgrade` (JWT required)
+
+### Products (JWT required)
+- `POST /api/v1/products/`
+- `GET /api/v1/products/?page=1&limit=10&search=milk`
+- `DELETE /api/v1/products/{product_id}`
+- `GET /api/v1/products/expiry-status`
+- `GET /api/v1/products/alerts?soon_days=7`
+
+### Scan
+- `POST /api/v1/scan/scan/image`
+- `GET /api/v1/scan/scan/scans`
+
+## Frontend Behavior
+
+- Login stores JWT in `localStorage` under `auth_token`
+- Dashboard validates token against `/api/v1/auth/me`
+- Dashboard products use live API data (no static hardcoded rows)
+- Product table supports search + pagination
+- Expiry alerts (expired + expiring soon) are fetched from API
+- In-page loading/success/error states are shown for key actions
+
+## Running Tests
+
 ```bash
-git clone https://github.com/your-username/digital-expiry-tracker.git
-cd digital-expiry-tracker
+pytest -q
+```
 
-2️⃣ Create Virtual Environment
-python -m venv venv
-venv\Scripts\activate   # Windows
+Focused unit tests:
+```bash
+pytest -q tests/test_expiry_service.py tests/test_expiry_parser.py
+```
 
-3️⃣ Install Dependencies
-pip install -r backend/requirements.txt
+## Notes
 
-4️⃣ Run Backend Server
-uvicorn backend.main:app --reload or
-python -m uvicorn app.main:app --reload
-
-5️⃣ Open API Docs
-http://127.0.0.1:8000/docs
-
-API Endpoints
-GET    /products
-POST   /products
-PUT    /products/{id}
-DELETE /products/{id}
-
-Test using:
-
-Thunder Client (VS Code)
-
-Postman
-
-| Metric          | Before  | After     |
-| --------------- | ------- | --------- |
-| Expiry Tracking | Manual  | Automated |
-| Food Wastage    | High    | Reduced   |
-| Health Risk     | Present | Minimized |
-| User Effort     | High    | Low       |
-
-🚀 Future Enhancements
-Short Term
-
-📧 Email reminders
-
-📱 Mobile-friendly UI
-
-Medium Term
-
-🔔 Push notifications
-
-📈 Consumption analytics
-
-Long Term
-
-🤖 AI-based expiry prediction
-
-☁️ Cloud deployment
-
-🧠 Smart shopping suggestions
-
-🏆 Why This Project Stands Out
-
-✅ Real-world problem solving
-
-✅ OCR + Backend integration
-
-✅ Clean API architecture
-
-✅ Suitable for hackathons & academics
-
-✅ Scalable for production use
-
-👨‍💻 Author
-
-Harshil Thakkar
-B.Tech – Artificial Intelligence & Machine Learning
-
-⭐ Support
-
-If you like this project:
-
-⭐ Star the repository
-
-🍴 Fork it
-
-🧠 Share feedback
-
-## CodeRabbit Integration
-This change is made to test CodeRabbit AI code review.
+- OCR endpoints require OCR-related dependencies (OpenCV, Tesseract, EasyOCR) to be installed.
+- For production, set a strong `SECRET_KEY`, secure token storage, and proper DB engine settings.

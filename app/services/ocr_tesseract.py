@@ -1,6 +1,3 @@
-import pytesseract
-
-
 class TesseractRecognizer:
     @staticmethod
     def recognize(image):
@@ -10,6 +7,7 @@ class TesseractRecognizer:
         """
 
         config = "--oem 3 --psm 6"
+        import pytesseract
 
         text = pytesseract.image_to_string(
             image,

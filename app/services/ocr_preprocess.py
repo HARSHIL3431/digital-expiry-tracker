@@ -1,9 +1,8 @@
-import cv2
-import numpy as np
-
 class OCRPreprocess:
     @staticmethod
     def preprocess(image_path: str):
+        import cv2
+        import numpy as np
         image = cv2.imread(image_path)
 
         if image is None:

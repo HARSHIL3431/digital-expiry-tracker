@@ -1,7 +1,6 @@
-import easyocr
-
 class EasyOCRDetector:
     def __init__(self):
+        import easyocr
         self.reader = easyocr.Reader(['en'], gpu=False)
 
     def detect(self, image):

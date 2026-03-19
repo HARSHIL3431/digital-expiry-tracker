@@ -1,6 +1,3 @@
-import cv2
-import pytesseract
-
 from app.services.ocr_preprocess import OCRPreprocess
 from app.services.ocr_easyocr import EasyOCRDetector
 from app.services.ocr_tesseract import TesseractRecognizer
@@ -20,9 +17,42 @@ class OCRService:
     def __init__(self):
         self.expiry_parser = ExpiryParser()
 
+    @staticmethod
+    def _require_ocr_deps() -> None:
+        """
+        Scan/OCR is an optional feature during basic auth/UI testing.
+
+        We keep the router/service wired, but provide a clear runtime error if
+        heavy OCR dependencies aren't installed (opencv/easyocr/tesseract).
+        """
+        missing = []
+        try:
+            import cv2  # noqa: F401
+        except Exception:
+            missing.append("opencv-python (cv2)")
+        try:
+            import pytesseract  # noqa: F401
+        except Exception:
+            missing.append("pytesseract")
+        try:
+            import easyocr  # noqa: F401
+        except Exception:
+            missing.append("easyocr")
+
+        if missing:
+            raise RuntimeError(
+                "OCR dependencies are missing: "
+                + ", ".join(missing)
+                + ". Install OCR extras to use /api/v1/scan/* endpoints."
+            )
+
     # ---------------- FULL IMAGE TESSERACT ---------------- #
 
     def _full_image_tesseract(self, image_path: str):
+        self._require_ocr_deps()
+        import cv2
+        import pytesseract
+
         image = cv2.imread(image_path)
 
         if image is None:
@@ -46,6 +76,7 @@ class OCRService:
     # ---------------- EASYOCR + CROP PIPELINE ---------------- #
 
     def _easyocr_pipeline(self, image_path: str):
+        self._require_ocr_deps()
         processed = OCRPreprocess.preprocess(image_path)
 
         detector = EasyOCRDetector()
