@@ -4,6 +4,8 @@ from datetime import date, datetime
 
 class ProductBase(BaseModel):
     product_name: str
+    category: str | None = None
+    quantity: int | None = 1
     manufacture_date: date
     expiry_date: date
     price: float

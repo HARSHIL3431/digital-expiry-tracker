@@ -8,6 +8,7 @@ from app import models  # ensures models are registered
 from app.api.v1 import products, scan
 from app.api.v1 import auth
 from app.api.v1 import logs
+from app.api.v1 import analytics
 
 
 # ------------------ LIFESPAN ------------------
@@ -131,6 +132,12 @@ app.include_router(
     logs.router,
     prefix="/api/v1/logs",
     tags=["Logs"]
+)
+
+app.include_router(
+    analytics.router,
+    prefix="/api/v1/analytics",
+    tags=["Analytics"]
 )
 
 

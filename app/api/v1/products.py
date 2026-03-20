@@ -1,4 +1,8 @@
-from fastapi import APIRouter, Depends, HTTPException, Query
+from datetime import date
+from io import StringIO
+import csv
+
+from fastapi import APIRouter, Depends, HTTPException, Query, UploadFile, File
 from sqlalchemy.orm import Session
 
 from app import models
@@ -49,8 +53,13 @@ def create_product(
     if product.price < 0:
         raise HTTPException(status_code=400, detail="Price cannot be negative")
 
+    product_payload = product.model_dump()
+    product_payload["category"] = product_payload.get("category") or "General"
+    raw_quantity = product_payload.get("quantity")
+    product_payload["quantity"] = raw_quantity if isinstance(raw_quantity, int) and raw_quantity > 0 else 1
+
     db_product = models.Product(
-        **product.model_dump(),
+        **product_payload,
         user_id=current_user.id
     )
 
@@ -86,6 +95,111 @@ def create_product(
     return db_product
 
 
+@router.post("/upload-csv")
+async def upload_csv(
+    file: UploadFile = File(...),
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(get_current_user)
+):
+    if not file.filename or not file.filename.lower().endswith(".csv"):
+        raise HTTPException(status_code=400, detail="Please upload a CSV file")
+
+    raw_content = await file.read()
+    if not raw_content:
+        raise HTTPException(status_code=400, detail="CSV file is empty")
+
+    try:
+        decoded_content = raw_content.decode("utf-8-sig")
+    except UnicodeDecodeError as error:
+        raise HTTPException(status_code=400, detail="CSV must be UTF-8 encoded") from error
+
+    reader = csv.DictReader(StringIO(decoded_content))
+    field_names = reader.fieldnames or []
+    if not field_names:
+        raise HTTPException(status_code=400, detail="CSV headers are missing")
+
+    required_fields = {"name", "price", "expiry_date"}
+    normalized_headers = {header.strip().lower() for header in field_names if header}
+    missing_fields = sorted(required_fields - normalized_headers)
+    if missing_fields:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Missing required CSV columns: {', '.join(missing_fields)}"
+        )
+
+    subscription = db.query(models.Subscription).filter(
+        models.Subscription.user_id == current_user.id
+    ).first()
+    if not subscription:
+        raise HTTPException(status_code=400, detail="Subscription not found")
+
+    existing_products = db.query(models.Product).filter(
+        models.Product.user_id == current_user.id
+    ).count()
+
+    remaining_free_slots = None
+    if subscription.plan_type == "free":
+        remaining_free_slots = max(0, 5 - existing_products)
+
+    products_to_insert = []
+    inserted = 0
+    skipped = 0
+
+    for row in reader:
+        normalized_row = {
+            (key or "").strip().lower(): (value or "").strip()
+            for key, value in row.items()
+        }
+
+        name = normalized_row.get("name", "")
+        category = normalized_row.get("category", "") or "General"
+        quantity_raw = normalized_row.get("quantity", "") or "1"
+        price_raw = normalized_row.get("price", "")
+        expiry_raw = normalized_row.get("expiry_date", "")
+
+        if not all([name, price_raw, expiry_raw]):
+            skipped += 1
+            continue
+
+        try:
+            quantity = int(quantity_raw)
+            if quantity < 0:
+                raise ValueError("quantity must be non-negative")
+
+            price = float(price_raw)
+            if price < 0:
+                raise ValueError("price must be non-negative")
+
+            expiry_date = date.fromisoformat(expiry_raw)
+        except ValueError:
+            skipped += 1
+            continue
+
+        if remaining_free_slots is not None and inserted >= remaining_free_slots:
+            skipped += 1
+            continue
+
+        products_to_insert.append(models.Product(
+            product_name=name,
+            category=category,
+            quantity=quantity,
+            manufacture_date=date.today(),
+            expiry_date=expiry_date,
+            price=price,
+            user_id=current_user.id,
+        ))
+        inserted += 1
+
+    if products_to_insert:
+        db.add_all(products_to_insert)
+        db.commit()
+
+    return {
+        "inserted": inserted,
+        "skipped": skipped,
+    }
+
+
 # ==============================
 # 📋 GET PRODUCTS
 # ==============================
@@ -118,6 +232,8 @@ def get_products(
         response.append({
             "id": product.id,
             "product_name": product.product_name,
+            "category": product.category or "General",
+            "quantity": product.quantity or 1,
             "manufacture_date": product.manufacture_date,
             "expiry_date": product.expiry_date,
             "price": product.price,
@@ -200,6 +316,8 @@ def get_products_by_expiry_status(
         product_data = {
             "id": product.id,
             "product_name": product.product_name,
+            "category": product.category or "General",
+            "quantity": product.quantity or 1,
             "manufacture_date": product.manufacture_date,
             "expiry_date": product.expiry_date,
             "price": product.price,

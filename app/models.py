@@ -40,6 +40,8 @@ class Product(Base):
     id = Column(Integer, primary_key=True, index=True)
 
     product_name = Column(String, nullable=False)
+    category = Column(String, nullable=True)
+    quantity = Column(Integer, nullable=False, default=1)
     manufacture_date = Column(Date, nullable=False)
     expiry_date = Column(Date, nullable=False)
     price = Column(Float, nullable=False)

@@ -1325,7 +1325,7 @@
                 <div class="page-header">
                     <h2>Asset Manifest</h2>
                     <div class="action-flex req-manager">
-                        <button class="btn" onclick="alert('CSV Upload Simulator Triggered')">
+                        <button class="btn" onclick="triggerCsvUpload()">
                             <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                     d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path>
@@ -1340,6 +1340,7 @@
                             Register Asset
                         </button>
                     </div>
+                    <input type="file" id="csvUploadInput" accept=".csv,text/csv" style="display:none" onchange="handleCsvFileSelection(event)" />
                 </div>
 
                 <div style="display: flex; justify-content: space-between; gap: 1rem; align-items: center; margin-bottom: 1rem; flex-wrap: wrap;">
@@ -1436,17 +1437,23 @@
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 1.5rem;">
                     <div class="card">
                         <h3>Category Risk Distribution</h3>
-                        <div class="chart-placeholder" style="height: 200px;">[ Radar Chart Placeholder ]</div>
+                        <div id="analyticsCategoryContainer" style="height: 200px;">
+                            <canvas id="analyticsCategoryChart"></canvas>
+                        </div>
                     </div>
                     <div class="card">
                         <h3>Waste vs Profit Margin</h3>
-                        <div class="chart-placeholder" style="height: 200px;">[ Bar Chart Placeholder ]</div>
+                        <div id="analyticsWasteContainer" style="height: 200px;">
+                            <canvas id="analyticsWasteChart"></canvas>
+                        </div>
                     </div>
                 </div>
 
                 <div class="card">
                     <h3>Historical Expiry Trend (YTD)</h3>
-                    <div class="chart-placeholder" style="height: 300px;">[ Area Timeline Placeholder ]</div>
+                    <div id="analyticsTrendContainer" style="height: 300px;">
+                        <canvas id="analyticsTrendChart"></canvas>
+                    </div>
                 </div>
             </section>
 
@@ -1546,6 +1553,7 @@
         const PRODUCT_API_BASE = '/api/v1/products';
         const ALERT_API_BASE = '/api/v1/products/alerts?soon_days=7';
         const LOGS_API_BASE = '/api/v1/logs';
+        const ANALYTICS_API_BASE = '/api/v1/analytics';
         let currentRole = 'admin'; // admin | manager | viewer
         let products = [];
         let activityLogs = [];
@@ -1564,6 +1572,9 @@
         let totalPages = 1;
         let currentSearch = '';
         let expiryTrendChart = null;
+        let analyticsCategoryChart = null;
+        let analyticsWasteChart = null;
+        let analyticsTrendChart = null;
         let notificationItems = [];
         const notificationReadState = {};
 
@@ -1600,24 +1611,30 @@
             el.innerText = `Last updated ${now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
         }
 
-        function getAuthHeaders() {
+        function getAuthHeaders(includeJson = true) {
             const token = getAuthToken();
             if (!token) {
                 window.location.replace('/app/login');
                 throw new Error('Authentication required');
             }
 
-            return {
-                'Content-Type': 'application/json',
+            const headers = {
                 'Authorization': `Bearer ${token}`
             };
+
+            if (includeJson) {
+                headers['Content-Type'] = 'application/json';
+            }
+
+            return headers;
         }
 
         async function apiRequest(url, options = {}) {
+            const isFormData = typeof FormData !== 'undefined' && options.body instanceof FormData;
             const response = await fetch(url, {
                 ...options,
                 headers: {
-                    ...getAuthHeaders(),
+                    ...getAuthHeaders(!isFormData),
                     ...(options.headers || {})
                 }
             });
@@ -1641,8 +1658,8 @@
             return {
                 id: product.id,
                 name: product.product_name,
-                category: 'General',
-                qty: Number.isFinite(product.price) ? product.price.toFixed(2) : '-',
+                category: product.category || 'General',
+                qty: Number.isFinite(product.quantity) ? product.quantity : 1,
                 expiry: product.expiry_date,
                 expiry_status: product.expiry_status,
                 days_left: product.days_left,
@@ -2057,6 +2074,178 @@
             });
         }
 
+        function renderNoDataInContainer(containerId, message) {
+            const container = document.getElementById(containerId);
+            if (!container) return;
+            container.innerHTML = `<div class="chart-placeholder" style="height: 100%;">${message}</div>`;
+        }
+
+        function resetAnalyticsCanvas(containerId, canvasId) {
+            const container = document.getElementById(containerId);
+            if (!container) return null;
+            container.innerHTML = `<canvas id="${canvasId}"></canvas>`;
+            return document.getElementById(canvasId);
+        }
+
+        function destroyAnalyticsCharts() {
+            if (analyticsCategoryChart) {
+                analyticsCategoryChart.destroy();
+                analyticsCategoryChart = null;
+            }
+            if (analyticsWasteChart) {
+                analyticsWasteChart.destroy();
+                analyticsWasteChart = null;
+            }
+            if (analyticsTrendChart) {
+                analyticsTrendChart.destroy();
+                analyticsTrendChart = null;
+            }
+        }
+
+        function renderAnalyticsCharts(data) {
+            if (typeof Chart === 'undefined') {
+                renderNoDataInContainer('analyticsCategoryContainer', 'No data available');
+                renderNoDataInContainer('analyticsWasteContainer', 'No data available');
+                renderNoDataInContainer('analyticsTrendContainer', 'No data available');
+                return;
+            }
+
+            destroyAnalyticsCharts();
+
+            const categoryCanvas = resetAnalyticsCanvas('analyticsCategoryContainer', 'analyticsCategoryChart');
+            const wasteCanvas = resetAnalyticsCanvas('analyticsWasteContainer', 'analyticsWasteChart');
+            const trendCanvas = resetAnalyticsCanvas('analyticsTrendContainer', 'analyticsTrendChart');
+
+            if (!categoryCanvas || !wasteCanvas || !trendCanvas) return;
+
+            const categoryRisk = data?.category_risk || {};
+            const categoryLabels = Object.keys(categoryRisk).length ? Object.keys(categoryRisk) : ['General'];
+            const categoryValues = categoryLabels.map(label => Number(categoryRisk[label] || 0));
+
+            analyticsCategoryChart = new Chart(categoryCanvas, {
+                type: 'radar',
+                data: {
+                    labels: categoryLabels,
+                    datasets: [{
+                        label: 'Risk Count',
+                        data: categoryValues,
+                        borderColor: '#22d3ee',
+                        backgroundColor: 'rgba(34, 211, 238, 0.16)',
+                        pointBackgroundColor: '#67e8f9',
+                        pointBorderColor: '#083344'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        r: {
+                            angleLines: { color: 'rgba(148, 163, 184, 0.18)' },
+                            grid: { color: 'rgba(148, 163, 184, 0.18)' },
+                            pointLabels: { color: '#cbd5e1', font: { size: 11 } },
+                            ticks: { color: '#94a3b8', backdropColor: 'transparent', precision: 0 }
+                        }
+                    }
+                }
+            });
+
+            const waste = Number(data?.waste_vs_profit?.waste || 0);
+            const profit = Number(data?.waste_vs_profit?.profit || 0);
+
+            analyticsWasteChart = new Chart(wasteCanvas, {
+                type: 'bar',
+                data: {
+                    labels: ['Waste', 'Profit'],
+                    datasets: [{
+                        data: [waste, profit],
+                        backgroundColor: ['rgba(239, 68, 68, 0.45)', 'rgba(34, 197, 94, 0.45)'],
+                        borderColor: ['#ef4444', '#22c55e'],
+                        borderWidth: 1.2,
+                        borderRadius: 6
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        x: {
+                            ticks: { color: '#cbd5e1' },
+                            grid: { color: 'rgba(148, 163, 184, 0.1)' }
+                        },
+                        y: {
+                            beginAtZero: true,
+                            ticks: { color: '#94a3b8' },
+                            grid: { color: 'rgba(148, 163, 184, 0.1)' }
+                        }
+                    }
+                }
+            });
+
+            const trendItems = Array.isArray(data?.expiry_trend) ? data.expiry_trend : [];
+            const trendLabels = trendItems.map(item => item.month);
+            const trendValues = trendItems.map(item => Number(item.count || 0));
+
+            analyticsTrendChart = new Chart(trendCanvas, {
+                type: 'line',
+                data: {
+                    labels: trendLabels,
+                    datasets: [{
+                        label: 'Products',
+                        data: trendValues,
+                        borderColor: '#38bdf8',
+                        backgroundColor: 'rgba(56, 189, 248, 0.16)',
+                        fill: true,
+                        tension: 0.35,
+                        pointRadius: 3,
+                        pointBackgroundColor: '#7dd3fc',
+                        pointBorderColor: '#0c4a6e'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        x: {
+                            ticks: { color: '#cbd5e1' },
+                            grid: { color: 'rgba(148, 163, 184, 0.1)' }
+                        },
+                        y: {
+                            beginAtZero: true,
+                            ticks: { color: '#94a3b8', precision: 0 },
+                            grid: { color: 'rgba(148, 163, 184, 0.1)' }
+                        }
+                    }
+                }
+            });
+        }
+
+        async function loadAnalytics() {
+            try {
+                const payload = await apiRequest(`${ANALYTICS_API_BASE}`);
+                const hasCategory = Object.values(payload?.category_risk || {}).some(v => Number(v || 0) > 0);
+                const hasWasteProfit = Number(payload?.waste_vs_profit?.waste || 0) > 0 || Number(payload?.waste_vs_profit?.profit || 0) > 0;
+                const hasTrend = Array.isArray(payload?.expiry_trend) && payload.expiry_trend.length > 0;
+
+                if (!hasCategory && !hasWasteProfit && !hasTrend) {
+                    destroyAnalyticsCharts();
+                    renderNoDataInContainer('analyticsCategoryContainer', 'No data available');
+                    renderNoDataInContainer('analyticsWasteContainer', 'No data available');
+                    renderNoDataInContainer('analyticsTrendContainer', 'No data available');
+                    return;
+                }
+
+                renderAnalyticsCharts(payload);
+            } catch (error) {
+                destroyAnalyticsCharts();
+                renderNoDataInContainer('analyticsCategoryContainer', 'No data available');
+                renderNoDataInContainer('analyticsWasteContainer', 'No data available');
+                renderNoDataInContainer('analyticsTrendContainer', 'No data available');
+            }
+        }
+
         // Init
         document.addEventListener('DOMContentLoaded', async () => {
             updateRole();
@@ -2074,6 +2263,7 @@
             try {
                 await validateSession();
                 await loadProducts();
+                await loadAnalytics();
             } catch (error) {
                 setStatus(error.message, 'error');
                 const tbody = document.getElementById('productTableBody');
@@ -2103,6 +2293,14 @@
                 'alerts': 'Alert Routing Configuration'
             };
             document.getElementById('headerTitle').innerText = titles[viewId];
+
+            if (viewId === 'analytics') {
+                loadAnalytics().catch(() => {
+                    renderNoDataInContainer('analyticsCategoryContainer', 'No data available');
+                    renderNoDataInContainer('analyticsWasteContainer', 'No data available');
+                    renderNoDataInContainer('analyticsTrendContainer', 'No data available');
+                });
+            }
         }
 
         // Topbar Notification Toggle
@@ -2238,6 +2436,45 @@
             document.getElementById('productModal').classList.remove('active');
         }
 
+        function triggerCsvUpload() {
+            const input = document.getElementById('csvUploadInput');
+            if (!input) return;
+            input.value = '';
+            input.click();
+        }
+
+        async function handleCsvFileSelection(event) {
+            const input = event?.target;
+            const file = input?.files?.[0];
+
+            if (!file) return;
+
+            if (!file.name.toLowerCase().endsWith('.csv')) {
+                setStatus('Please select a valid CSV file.', 'error');
+                input.value = '';
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('file', file);
+
+            try {
+                setStatus('Uploading CSV...', 'info');
+                const result = await apiRequest(`${PRODUCT_API_BASE}/upload-csv`, {
+                    method: 'POST',
+                    body: formData
+                });
+
+                currentPage = 1;
+                await loadProducts();
+                setStatus(`CSV ingestion complete. Inserted: ${result.inserted ?? 0}, Skipped: ${result.skipped ?? 0}.`, 'success', true);
+            } catch (error) {
+                setStatus(error.message, 'error');
+            } finally {
+                input.value = '';
+            }
+        }
+
         async function saveProduct() {
             const index = document.getElementById('editIndex').value;
             const form = document.getElementById('productForm');
@@ -2253,11 +2490,15 @@
                 return;
             }
 
+            const quantityValue = parseInt(document.getElementById('pQty').value || '1', 10);
+            const safeQuantity = Number.isFinite(quantityValue) && quantityValue > 0 ? quantityValue : 1;
             const priceValue = parseFloat(document.getElementById('pQty').value || '0');
             const today = new Date().toISOString().split('T')[0];
 
             const payload = {
                 product_name: document.getElementById('pName').value,
+                category: document.getElementById('pCat').value || 'General',
+                quantity: safeQuantity,
                 manufacture_date: today,
                 expiry_date: document.getElementById('pDate').value,
                 price: priceValue
