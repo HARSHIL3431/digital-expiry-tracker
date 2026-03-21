@@ -10,6 +10,24 @@ function validateEmail(email) {
     return re.test(String(email).toLowerCase());
 }
 
+function persistTokenFromUrlIfPresent() {
+    const url = new URL(window.location.href);
+    const token = url.searchParams.get('token');
+
+    if (!token) {
+        return false;
+    }
+
+    localStorage.setItem('auth_token', token);
+    url.searchParams.delete('token');
+    window.history.replaceState({}, document.title, url.pathname + (url.search ? `?${url.searchParams.toString()}` : ''));
+    return true;
+}
+
+function loginWithGoogle() {
+    window.location.href = "/api/v1/auth/google/login";
+}
+
 /**
  * Handle user login
  */
@@ -28,7 +46,7 @@ async function handleLogin(event) {
     }
 
     try {
-        const btn = document.querySelector('.auth-btn');
+        const btn = document.getElementById('loginSubmitBtn');
         const originalText = btn.innerHTML;
         btn.innerHTML = 'Logging in...';
         btn.disabled = true;
@@ -54,7 +72,7 @@ async function handleLogin(event) {
         errorBox.textContent = error.message;
         errorBox.style.display = 'block';
     } finally {
-        const btn = document.querySelector('.auth-btn');
+        const btn = document.getElementById('loginSubmitBtn');
         if (btn) {
             btn.innerHTML = 'Log in →';
             btn.disabled = false;
@@ -141,6 +159,12 @@ function logout() {
 
 // Bind events on load depending on which page we are on
 document.addEventListener('DOMContentLoaded', () => {
+    const hadTokenInUrl = persistTokenFromUrlIfPresent();
+    if (hadTokenInUrl && window.location.pathname !== '/app/dashboard') {
+        window.location.href = '/app/dashboard';
+        return;
+    }
+
     const loginForm = document.getElementById('loginForm');
     if (loginForm) {
         loginForm.addEventListener('submit', handleLogin);

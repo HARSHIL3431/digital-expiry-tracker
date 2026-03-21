@@ -558,6 +558,36 @@ footer {
     margin-top: 1rem;
 }
 
+.google-login-container {
+width: 100%;
+margin-top: 10px;
+}
+
+.google-btn {
+width: 100%;
+padding: 12px;
+border-radius: 10px;
+border: 1px solid #444;
+background: #fff;
+color: #000;
+display: flex;
+align-items: center;
+justify-content: center;
+gap: 10px;
+cursor: pointer;
+}
+
+.google-btn img {
+width: 18px;
+height: 18px;
+}
+
+.auth-divider {
+    text-align: center;
+    margin: 12px 0;
+    color: #aaa;
+}
+
 .auth-footer {
     margin-top: 2rem;
     text-align: center;

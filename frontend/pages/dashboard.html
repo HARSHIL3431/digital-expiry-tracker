@@ -1129,8 +1129,16 @@
 
 <body class="role-admin" id="appBody">
     <script>
-        // Protect dashboard: if no token, redirect to login
+        // Accept token from OAuth callback and protect dashboard
         (function () {
+            const currentUrl = new URL(window.location.href);
+            const tokenFromQuery = currentUrl.searchParams.get('token');
+            if (tokenFromQuery) {
+                localStorage.setItem('auth_token', tokenFromQuery);
+                currentUrl.searchParams.delete('token');
+                window.history.replaceState({}, document.title, currentUrl.pathname + (currentUrl.search ? `?${currentUrl.searchParams.toString()}` : ''));
+            }
+
             const token = localStorage.getItem('auth_token');
             if (!token) window.location.replace('/app/login');
         })();
