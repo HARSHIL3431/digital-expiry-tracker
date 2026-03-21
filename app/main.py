@@ -2,9 +2,11 @@ from fastapi import FastAPI
 from contextlib import asynccontextmanager
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
+from starlette.middleware.sessions import SessionMiddleware
 
 from app.utils.database import init_db, SessionLocal
 from app import models  # ensures models are registered
+from app.core.config import SECRET_KEY
 from app.api.v1 import products, scan
 from app.api.v1 import auth
 from app.api.v1 import logs
@@ -66,6 +68,8 @@ app = FastAPI(
     version="1.1.0",
     lifespan=lifespan
 )
+
+app.add_middleware(SessionMiddleware, secret_key=SECRET_KEY)
 
 
 # ------------------ FRONTEND STATIC FILES ------------------
