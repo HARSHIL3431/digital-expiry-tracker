@@ -18,6 +18,22 @@ class OCRService:
         self.expiry_parser = ExpiryParser()
 
     @staticmethod
+    def _normalize_bbox_points(raw_bbox):
+        if not raw_bbox:
+            return []
+
+        normalized = []
+        for point in raw_bbox:
+            if not isinstance(point, (list, tuple)) or len(point) < 2:
+                continue
+            try:
+                normalized.append([int(point[0]), int(point[1])])
+            except (TypeError, ValueError):
+                continue
+
+        return normalized
+
+    @staticmethod
     def _require_ocr_deps() -> None:
         """
         Scan/OCR is an optional feature during basic auth/UI testing.
@@ -85,7 +101,11 @@ class OCRService:
         extracted_text = []
 
         for box in boxes:
-            (tl, tr, br, bl) = box["bbox"]
+            bbox = self._normalize_bbox_points(box.get("bbox"))
+            if len(bbox) != 4:
+                continue
+
+            (tl, tr, br, bl) = bbox
 
             x1, y1 = int(tl[0]), int(tl[1])
             x2, y2 = int(br[0]), int(br[1])
@@ -101,6 +121,39 @@ class OCRService:
                 extracted_text.append(text)
 
         return extracted_text
+
+    def _easyocr_pipeline_with_regions(self, image_path: str):
+        self._require_ocr_deps()
+        processed = OCRPreprocess.preprocess(image_path)
+
+        detector = EasyOCRDetector()
+        boxes = detector.detect(processed)
+
+        regions = []
+
+        for box in boxes:
+            bbox = self._normalize_bbox_points(box.get("bbox"))
+            if len(bbox) != 4:
+                continue
+
+            (tl, tr, br, bl) = bbox
+
+            x1, y1 = int(tl[0]), int(tl[1])
+            x2, y2 = int(br[0]), int(br[1])
+
+            crop = processed[y1:y2, x1:x2]
+
+            text = ""
+            if crop.size != 0:
+                text = TesseractRecognizer.recognize(crop) or ""
+
+            regions.append({
+                "text": text,
+                "bbox": bbox,
+                "detector_confidence": float(box.get("confidence", 0.0) or 0.0),
+            })
+
+        return regions
 
     # ---------------- MAIN ENTRY ---------------- #
 
@@ -124,3 +177,31 @@ class OCRService:
         easy_texts = self._easyocr_pipeline(image_path)
 
         return easy_texts
+
+    def enhanced_extract_with_regions(self, image_path: str):
+        """
+        Backward-compatible structured OCR output.
+        """
+
+        # Step 1️⃣ Try full image Tesseract
+        tesseract_texts = self._full_image_tesseract(image_path)
+
+        for text in tesseract_texts:
+            if self.expiry_parser.extract_expiry_date(text):
+                print("✅ Expiry detected via Full Image Tesseract")
+                return {
+                    "texts": tesseract_texts,
+                    "regions": [],
+                    "engine": "tesseract_full",
+                }
+
+        # Step 2️⃣ Fallback to EasyOCR pipeline with regions
+        print("⚠ Full Image Tesseract failed → Switching to EasyOCR pipeline")
+
+        easy_regions = self._easyocr_pipeline_with_regions(image_path)
+
+        return {
+            "texts": [region["text"] for region in easy_regions],
+            "regions": easy_regions,
+            "engine": "easyocr_regions",
+        }

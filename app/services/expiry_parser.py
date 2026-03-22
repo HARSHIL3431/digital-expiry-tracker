@@ -34,23 +34,33 @@ class ExpiryParser:
 
     MFG_KEYWORDS = [
         "mfg",
+        "mfd",
+        "mfg date",
         "manufactured",
         "manufacturing",
         "packed on",
         "pack date",
+        "pkd",
     ]
 
     EXPIRY_KEYWORDS = [
         "expiry",
         "expiry date",
         "best before",
+        "best-before",
         "use before",
         "expires",
+        "exp date",
+        "exp.",
         r"\bexp\b",
     ]
 
+    @staticmethod
+    def _normalize_text(value: str) -> str:
+        return re.sub(r"\s+", " ", (value or "").strip().lower())
+
     def extract_expiry_date(self, text: str) -> Optional[date]:
-        text = text.lower()
+        text = (text or "").lower()
         lines = text.splitlines()
 
         # ✅ STEP 1: Keyword-based extraction (highest priority)
@@ -78,13 +88,41 @@ class ExpiryParser:
 
         return None
 
+    def extract_dates_with_confidence(self, text: str) -> List[Tuple[date, int]]:
+        """
+        Extract all date candidates from free text with parser confidence.
+        """
+        normalized = self._normalize_text(text)
+        candidates: List[Tuple[date, int]] = []
+        occupied_spans: List[Tuple[int, int]] = []
+
+        for pattern in self.DATE_PATTERNS:
+            for match in re.finditer(pattern, normalized):
+                start, end = match.span(1)
+                if any(start < span_end and end > span_start for span_start, span_end in occupied_spans):
+                    continue
+
+                parsed, confidence = self._parse_date(match.group(1))
+                if parsed:
+                    candidates.append((parsed, confidence))
+                    occupied_spans.append((start, end))
+
+        # De-duplicate by date while preserving best confidence
+        dedup: dict[date, int] = {}
+        for parsed, confidence in candidates:
+            dedup[parsed] = max(confidence, dedup.get(parsed, 0))
+
+        return [(parsed, confidence) for parsed, confidence in dedup.items()]
+
     # ---------------- HELPERS ---------------- #
 
     def _contains_expiry_keyword(self, line: str) -> bool:
-        return any(re.search(k, line) for k in self.EXPIRY_KEYWORDS)
+        normalized_line = self._normalize_text(line)
+        return any(re.search(k, normalized_line, flags=re.IGNORECASE) for k in self.EXPIRY_KEYWORDS)
 
     def _contains_mfg_keyword(self, line: str) -> bool:
-        return any(k in line for k in self.MFG_KEYWORDS)
+        normalized_line = self._normalize_text(line)
+        return any(k in normalized_line for k in self.MFG_KEYWORDS)
 
     def _extract_date_from_line(self, line: str) -> Tuple[Optional[date], int]:
         for pattern in self.DATE_PATTERNS:

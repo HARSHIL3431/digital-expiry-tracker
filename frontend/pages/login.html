@@ -60,7 +60,18 @@
                     <a href="#" style="color: var(--accent); text-decoration:none;">Forgot password?</a>
                 </div>
 
-                <button type="submit" class="btn btn-primary auth-btn">
+                                <div class="google-login-container">
+                                    <button type="button" class="google-btn" onclick="loginWithGoogle()">
+                                        <img src="https://developers.google.com/identity/images/g-logo.png" />
+                                        <span>Continue with Google</span>
+                                    </button>
+                                </div>
+
+                                <div class="auth-divider">
+                                    <span>OR</span>
+                                </div>
+
+                <button type="submit" id="loginSubmitBtn" class="btn btn-primary auth-btn">
                     Log in →
                 </button>
 
