@@ -1436,6 +1436,58 @@
                                 True. Vector risk elevated. </div>
                         </div>
                     </div>
+
+                    <div class="card" style="grid-column: 1 / -1;">
+                        <h3>Scan Preview</h3>
+                        <p style="font-size: 0.82rem; color: var(--text-muted); margin-bottom: 0.9rem;">
+                            Upload an image to preview OCR regions with highlighted bounding boxes.
+                        </p>
+                        <div style="display: flex; align-items: center; gap: 0.6rem; margin-bottom: 0.9rem; flex-wrap: wrap;">
+                            <button class="btn" onclick="triggerScanUpload()">
+                                <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path>
+                                </svg>
+                                Upload Image
+                            </button>
+                            <span id="scanPreviewMeta" style="font-size: 0.78rem; color: var(--text-muted);">No scan yet</span>
+                        </div>
+
+                        <input type="file" id="scanUploadInput" accept="image/*" style="display:none" onchange="handleScanFileSelection(event)" />
+
+                        <div id="scanPreviewContainer" style="display:none; position:relative; width:100%; max-width:720px; border:1px solid var(--border); border-radius: var(--radius); overflow:hidden; background: rgba(2, 6, 23, 0.55);">
+                            <img id="scanPreviewImage" alt="Scan preview" style="display:block; width:100%; height:auto;" />
+                            <canvas id="scanOverlayCanvas" style="position:absolute; top:0; left:0; pointer-events:none;"></canvas>
+                        </div>
+
+                        <!-- 🆕 CONFIRMATION BOX (Task 2) 🆕 -->
+                        <div id="confirmBox" style="display: none; margin-top: 20px; padding: 15px; background: #0f172a; border: 1px solid #334155; border-radius: 8px; position: relative; z-index: 9999; width: 100%; max-width: 720px;">
+                            <h3 style="margin-bottom: 1rem; color: var(--accent);">✅ Confirm Product Details</h3>
+                            <p id="confidenceWarning" style="color: orange; margin-bottom: 0.75rem;"></p>
+                            
+                            <div style="display: grid; gap: 0.75rem; margin-bottom: 1rem;">
+                                <input id="productName" type="text" placeholder="Product name (e.g., Yogurt)" 
+                                    style="padding: 0.6rem; border: 1px solid var(--border); border-radius: var(--radius); background: var(--bg-panel); color: var(--text-main); font-size: 0.9rem;" />
+                                
+                                <input id="productQty" type="number" placeholder="Quantity (e.g., 2)" min="1" value="1"
+                                    style="padding: 0.6rem; border: 1px solid var(--border); border-radius: var(--radius); background: var(--bg-panel); color: var(--text-main); font-size: 0.9rem;" />
+                                
+                                <div style="padding: 0.75rem; background: rgba(6, 182, 212, 0.15); border-radius: var(--radius); font-size: 0.85rem; color: var(--text-muted);">
+                                    <strong>Expiry Date:</strong> <span id="confirmExpiryDate">-</span>
+                                </div>
+                            </div>
+
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
+                                <button onclick="confirmProduct()" 
+                                    style="padding: 0.7rem; background: var(--accent); color: var(--bg-master); border: none; border-radius: var(--radius); font-weight: 600; cursor: pointer; font-size: 0.9rem;">
+                                    ➕ Add to Inventory
+                                </button>
+                                <button onclick="clearConfirmBox()" 
+                                    style="padding: 0.7rem; background: transparent; color: var(--text-muted); border: 1px solid var(--border); border-radius: var(--radius); cursor: pointer; font-size: 0.9rem;">
+                                    Cancel
+                                </button>
+                            </div>
+                        </div>
+                    </div>
             </section>
 
             <!-- VIEW 4: ANALYTICS -->
@@ -1562,6 +1614,7 @@
         const ALERT_API_BASE = '/api/v1/products/alerts?soon_days=7';
         const LOGS_API_BASE = '/api/v1/logs';
         const ANALYTICS_API_BASE = '/api/v1/analytics';
+        const SCAN_API_BASE = '/api/v1/scan/scan';
         let currentRole = 'admin'; // admin | manager | viewer
         let products = [];
         let activityLogs = [];
@@ -1585,6 +1638,7 @@
         let analyticsTrendChart = null;
         let notificationItems = [];
         const notificationReadState = {};
+        let lastScanPreviewObjectUrl = null;
 
         function getAuthToken() {
             return localStorage.getItem('auth_token');
@@ -2444,6 +2498,191 @@
             document.getElementById('productModal').classList.remove('active');
         }
 
+        function triggerScanUpload() {
+            const input = document.getElementById('scanUploadInput');
+            if (!input) return;
+            input.value = '';
+            input.click();
+        }
+
+        function clearScanOverlay() {
+            const canvas = document.getElementById('scanOverlayCanvas');
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            if (!ctx) return;
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+        }
+
+        function drawScanRegions(regions = []) {
+            const image = document.getElementById('scanPreviewImage');
+            const canvas = document.getElementById('scanOverlayCanvas');
+            if (!image || !canvas || !image.naturalWidth || !image.naturalHeight) return;
+
+            const displayWidth = image.clientWidth;
+            const displayHeight = image.clientHeight;
+            canvas.width = displayWidth;
+            canvas.height = displayHeight;
+            canvas.style.width = `${displayWidth}px`;
+            canvas.style.height = `${displayHeight}px`;
+
+            const scaleX = displayWidth / image.naturalWidth;
+            const scaleY = displayHeight / image.naturalHeight;
+
+            const ctx = canvas.getContext('2d');
+            if (!ctx) return;
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            if (!Array.isArray(regions)) return;
+
+            regions.forEach((region) => {
+                const bbox = region?.bbox;
+                const isExpiry = region?.is_expiry ?? false;
+
+                // ✨ HIGHLIGHT EXPIRY REGIONS (Task 1) ✨
+                ctx.strokeStyle = isExpiry ? '#22c55e' : '#22d3ee';
+                ctx.lineWidth = isExpiry ? 3 : 1;
+                ctx.fillStyle = isExpiry ? 'rgba(34, 197, 94, 0.2)' : 'rgba(34, 211, 238, 0.16)';
+
+                if (!Array.isArray(bbox) || bbox.length !== 4) return;
+
+                ctx.beginPath();
+                let firstPoint = null;
+                bbox.forEach((point, index) => {
+                    if (!Array.isArray(point) || point.length < 2) return;
+                    const x = Number(point[0]) * scaleX;
+                    const y = Number(point[1]) * scaleY;
+                    if (index === 0) {
+                        ctx.moveTo(x, y);
+                        firstPoint = { x, y };
+                    } else {
+                        ctx.lineTo(x, y);
+                    }
+                });
+                ctx.closePath();
+                ctx.fill();
+                ctx.stroke();
+
+                // 🏷️ LABEL EXPIRY (Optional)
+                if (isExpiry && firstPoint) {
+                    ctx.fillStyle = '#22c55e';
+                    ctx.font = 'bold 12px Inter, sans-serif';
+                    ctx.fillText('EXPIRY', firstPoint.x + 8, firstPoint.y - 8);
+                }
+            });
+        }
+
+        async function handleScanFileSelection(event) {
+            const input = event?.target;
+            const file = input?.files?.[0];
+            if (!file) return;
+
+            if (!file.type.startsWith('image/')) {
+                setStatus('Please select an image file for scan preview.', 'error');
+                input.value = '';
+                return;
+            }
+
+            const previewContainer = document.getElementById('scanPreviewContainer');
+            const previewImage = document.getElementById('scanPreviewImage');
+            const meta = document.getElementById('scanPreviewMeta');
+
+            if (!previewContainer || !previewImage || !meta) return;
+
+            if (lastScanPreviewObjectUrl) {
+                URL.revokeObjectURL(lastScanPreviewObjectUrl);
+            }
+
+            lastScanPreviewObjectUrl = URL.createObjectURL(file);
+            previewImage.src = lastScanPreviewObjectUrl;
+            previewContainer.style.display = 'block';
+            clearScanOverlay();
+            meta.innerText = 'Uploading and scanning...';
+            const preConfirmBox = document.getElementById('confirmBox');
+            if (preConfirmBox) {
+                preConfirmBox.style.display = 'none';
+            }
+
+            const formData = new FormData();
+            formData.append('file', file);
+
+            try {
+                const payload = await apiRequest(`${SCAN_API_BASE}/image`, {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const data = payload || {};
+                const result = data.scan_result || data;
+                console.log('SCAN RESULT:', result);
+                const regions = Array.isArray(result?.ocr_regions) ? result.ocr_regions : [];
+
+                const drawWhenReady = () => drawScanRegions(regions);
+                if (previewImage.complete) drawWhenReady();
+                else previewImage.onload = drawWhenReady;
+
+                meta.innerText = `Scan complete: ${regions.length} region(s) detected`;
+
+                const confirmBox = document.getElementById('confirmBox');
+                const warning = document.getElementById('confidenceWarning');
+                const expiry = result?.expiry_date || result?.expiry?.suggested?.normalized;
+
+                if (expiry) {
+                    if (confirmBox) {
+                        confirmBox.style.display = 'block';
+                    }
+
+                    if (warning) {
+                        warning.innerText = result?.needs_manual_input
+                            ? '⚠ Low confidence. Please verify expiry date.'
+                            : '';
+                    }
+
+                    window.lastScanResult = {
+                        ...(result || {}),
+                        expiry_date: expiry
+                    };
+
+                    const confirmExpiryDate = document.getElementById('confirmExpiryDate');
+                    if (confirmExpiryDate) {
+                        confirmExpiryDate.innerText = expiry;
+                    }
+
+                    const productName = document.getElementById('productName');
+                    if (productName) {
+                        productName.value = '';
+                    }
+
+                    const productQty = document.getElementById('productQty');
+                    if (productQty) {
+                        productQty.value = 1;
+                    }
+                } else {
+                    window.lastScanResult = null;
+                    if (confirmBox) {
+                        confirmBox.style.display = 'none';
+                    }
+                    if (warning) {
+                        warning.innerText = '';
+                    }
+                }
+            } catch (error) {
+                clearScanOverlay();
+                meta.innerText = 'Scan failed';
+                setStatus(error.message || 'Scan preview failed.', 'error');
+                window.lastScanResult = null;
+                const confirmBox = document.getElementById('confirmBox');
+                const warning = document.getElementById('confidenceWarning');
+                if (confirmBox) {
+                    confirmBox.style.display = 'none';
+                }
+                if (warning) {
+                    warning.innerText = '';
+                }
+            } finally {
+                input.value = '';
+            }
+        }
+
         function triggerCsvUpload() {
             const input = document.getElementById('csvUploadInput');
             if (!input) return;
@@ -2481,6 +2720,65 @@
             } finally {
                 input.value = '';
             }
+        }
+
+        // 🆕 CONFIRM PRODUCT FROM SCAN (Task 4) 🆕 #
+        async function confirmProduct() {
+            const name = document.getElementById("productName").value?.trim();
+            const qty = document.getElementById("productQty").value?.trim();
+
+            if (!name || !qty) {
+                alert('Fill all fields');
+                return;
+            }
+
+            const expiry = window.lastScanResult?.expiry_date;
+            if (!expiry) {
+                setStatus("Expiry date not available", 'error');
+                return;
+            }
+
+            try {
+                setStatus("Adding product to inventory...", 'info');
+                
+                const payload = await apiRequest(`${PRODUCT_API_BASE}/add-from-scan`, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({
+                        name: name,
+                        quantity: parseInt(qty, 10),
+                        expiry_date: expiry
+                    })
+                });
+
+                if (payload.success) {
+                    setStatus("✅ Product added successfully!", 'success', true);
+                    document.getElementById("confirmBox").style.display = "none";
+                    clearScanOverlay();
+                    document.getElementById("scanPreviewContainer").style.display = "none";
+                    
+                    // Refresh product list
+                    currentPage = 1;
+                    await loadProducts();
+
+                    alert('Product added');
+                    window.location.href = '/app/product-engine';
+                } else {
+                    setStatus("Failed to add product", 'error');
+                }
+            } catch (error) {
+                setStatus(error.message || 'Failed to add product', 'error');
+            }
+        }
+
+        // 🆕 CLEAR CONFIRMATION BOX (Task 4) 🆕 #
+        function clearConfirmBox() {
+            document.getElementById("confirmBox").style.display = "none";
+            document.getElementById("productName").value = "";
+            document.getElementById("productQty").value = "1";
+            window.lastScanResult = null;
         }
 
         async function saveProduct() {

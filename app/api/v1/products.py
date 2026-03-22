@@ -379,3 +379,69 @@ def get_expiry_alerts(
         "expired": expired,
         "expiring_soon": expiring_soon,
     }
+
+
+# ==============================
+# 🆕 ADD PRODUCT FROM SCAN (Task 5)
+# ==============================
+
+@router.post("/add-from-scan")
+def add_product_from_scan(
+    payload: dict,
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(get_current_user)
+):
+    """
+    Add a product to inventory from OCR scan result.
+    User-confirmed endpoint (not auto-save).
+    
+    Expected payload:
+    {
+        "name": "Product Name",
+        "quantity": 1,
+        "expiry_date": "2025-12-31"
+    }
+    """
+    try:
+        # Extract fields with defaults
+        product_name = payload.get("name", "Unknown Product").strip()
+        quantity = int(payload.get("quantity", 1))
+        expiry_date_str = payload.get("expiry_date")
+
+        if not product_name:
+            raise ValueError("Product name is required")
+        if not expiry_date_str:
+            raise ValueError("Expiry date is required")
+
+        # Parse expiry date
+        expiry_date = date.fromisoformat(expiry_date_str)
+
+        # Create product
+        product = models.Product(
+            product_name=product_name,
+            category="Scanned",
+            quantity=quantity,
+            manufacture_date=date.today(),
+            expiry_date=expiry_date,
+            price=0.0,
+            user_id=current_user.id
+        )
+
+        db.add(product)
+        db.commit()
+
+        # Log activity
+        create_activity_log(
+            db=db,
+            user_id=current_user.id,
+            action="PRODUCT_ADDED_FROM_SCAN",
+            details=f"Added '{product_name}' (Qty: {quantity}) from OCR scan"
+        )
+
+        return {"success": True, "product_id": product.id}
+
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=f"Failed to add product: {str(e)}")
