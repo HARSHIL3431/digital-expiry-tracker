@@ -89,6 +89,8 @@ ACCESS_TOKEN_EXPIRE_MINUTES=60
 ADMIN_EMAIL=admin@det.com
 DATABASE_URL=sqlite:///./expiry_tracker.db
 TESSERACT_PATH=tesseract
+GOOGLE_CLIENT_ID=your_client_id
+GOOGLE_CLIENT_SECRET=your_client_secret
 ```
 
 ## API Summary
@@ -96,8 +98,20 @@ TESSERACT_PATH=tesseract
 ### Authentication
 - `POST /api/v1/auth/register`
 - `POST /api/v1/auth/login`
+- `GET /api/v1/auth/google/login`
+- `GET /api/v1/auth/google/callback`
 - `GET /api/v1/auth/me` (JWT required)
 - `POST /api/v1/auth/upgrade` (JWT required)
+
+## Google OAuth Setup (Free)
+
+1. Create OAuth client in Google Cloud Console (Testing mode is fine for localhost).
+2. Add authorized redirect URI:
+   - `http://127.0.0.1:8000/api/v1/auth/google/callback`
+3. Put generated credentials into `.env`:
+   - `GOOGLE_CLIENT_ID=...`
+   - `GOOGLE_CLIENT_SECRET=...`
+4. On login page, click **Continue with Google**.
 
 ### Products (JWT required)
 - `POST /api/v1/products/`
