@@ -11,6 +11,8 @@ from app.api.v1 import products, scan
 from app.api.v1 import auth
 from app.api.v1 import logs
 from app.api.v1 import analytics
+from app.api.v1 import admin
+from app.services.expiry_alert_service import start_expiry_alert_scheduler, stop_expiry_alert_scheduler
 
 
 # ------------------ LIFESPAN ------------------
@@ -22,6 +24,10 @@ async def lifespan(app: FastAPI):
     # Initialize database
     init_db()
     print("Database initialized successfully.")
+
+    # Start background expiry alert scheduler once per app process.
+    start_expiry_alert_scheduler()
+    print("Expiry alert scheduler initialized.")
 
     # --- DEMO TEST USER SETUP ---
     from app.models import User, Subscription
@@ -56,6 +62,8 @@ async def lifespan(app: FastAPI):
         db.close()
 
     yield
+
+    stop_expiry_alert_scheduler()
 
     print("Shutting down Digital Expiry Tracker...")
 
@@ -147,6 +155,12 @@ app.include_router(
     analytics.router,
     prefix="/api/v1/analytics",
     tags=["Analytics"]
+)
+
+app.include_router(
+    admin.router,
+    prefix="/api/v1/admin",
+    tags=["Admin"]
 )
 
 

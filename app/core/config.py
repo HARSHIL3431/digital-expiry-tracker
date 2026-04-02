@@ -17,6 +17,17 @@ GOOGLE_REDIRECT_URI = os.getenv(
     "http://localhost:8000/api/v1/auth/google/callback"
 )
 
+EMAIL_USER = os.getenv("EMAIL_USER", "")
+EMAIL_PASSWORD = os.getenv("EMAIL_PASSWORD", "")
+EXPIRY_ALERT_WINDOW_DAYS = int(os.getenv("EXPIRY_ALERT_WINDOW_DAYS", "2"))
+EXPIRY_ALERT_INTERVAL_HOURS = int(os.getenv("EXPIRY_ALERT_INTERVAL_HOURS", "24"))
+ENABLE_EXPIRY_ALERT_SCHEDULER = os.getenv("ENABLE_EXPIRY_ALERT_SCHEDULER", "true").lower() in {
+    "1",
+    "true",
+    "yes",
+    "on",
+}
+
 TESSERACT_PATH = os.getenv(
     "TESSERACT_PATH",
     "tesseract"
