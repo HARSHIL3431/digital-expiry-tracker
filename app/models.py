@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Date, DateTime, ForeignKey, Float
+from sqlalchemy import Column, Integer, String, Date, DateTime, ForeignKey, Float, Boolean
 from sqlalchemy.orm import relationship
 from datetime import datetime
 from app.utils.database import Base
@@ -45,6 +45,7 @@ class Product(Base):
     manufacture_date = Column(Date, nullable=False)
     expiry_date = Column(Date, nullable=False)
     price = Column(Float, nullable=False)
+    alert_sent = Column(Boolean, nullable=False, default=False)
 
     created_at = Column(DateTime, default=datetime.utcnow)
 

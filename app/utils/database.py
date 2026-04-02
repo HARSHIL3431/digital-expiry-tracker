@@ -46,9 +46,15 @@ def _ensure_product_analytics_columns():
         if "quantity" not in existing_columns:
             connection.execute(text("ALTER TABLE products ADD COLUMN quantity INTEGER DEFAULT 1"))
 
+        if "alert_sent" not in existing_columns:
+            connection.execute(text("ALTER TABLE products ADD COLUMN alert_sent BOOLEAN DEFAULT 0"))
+
         connection.execute(
             text("UPDATE products SET category = 'General' WHERE category IS NULL OR TRIM(category) = ''")
         )
         connection.execute(
             text("UPDATE products SET quantity = 1 WHERE quantity IS NULL OR quantity < 1")
+        )
+        connection.execute(
+            text("UPDATE products SET alert_sent = 0 WHERE alert_sent IS NULL")
         )
