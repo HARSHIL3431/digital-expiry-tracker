@@ -115,14 +115,16 @@ async def google_login(request: Request):
             detail="Google OAuth is not configured. Set GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET in .env"
         )
 
-    request_redirect_uri = str(request.url_for("google_callback"))
-    redirect_uri = request_redirect_uri
-
+    # Use configured redirect URI as source of truth
+    redirect_uri = GOOGLE_REDIRECT_URI or str(request.url_for("google_callback"))
+    
+    # If configured, check for localhost/127.0.0.1 mismatch and canonicalize
     if GOOGLE_REDIRECT_URI:
         configured = urlparse(GOOGLE_REDIRECT_URI)
         request_host = request.url.hostname or ""
         configured_host = configured.hostname or ""
 
+        # Detect localhost/127.0.0.1 mismatch and redirect to canonical host
         if (
             request_host in {"localhost", "127.0.0.1"}
             and configured_host in {"localhost", "127.0.0.1"}
@@ -131,16 +133,10 @@ async def google_login(request: Request):
             canonical_login_url = f"{configured.scheme}://{configured.netloc}{request.url.path}"
             if request.url.query:
                 canonical_login_url = f"{canonical_login_url}?{request.url.query}"
-            print("[OAuth] Canonicalizing login host to configured redirect host:", canonical_login_url)
+            print(f"[OAuth] Redirecting from {request_host} to {configured_host} for consistency")
             return RedirectResponse(url=canonical_login_url, status_code=307)
 
-        redirect_uri = GOOGLE_REDIRECT_URI
-
-    if GOOGLE_REDIRECT_URI and GOOGLE_REDIRECT_URI != request_redirect_uri:
-        print("[OAuth] Redirect URI host mismatch detected.")
-        print("[OAuth] Configured:", GOOGLE_REDIRECT_URI)
-        print("[OAuth] Request-derived:", request_redirect_uri)
-
+    print(f"[OAuth] Using redirect_uri: {redirect_uri}")
     return await google.authorize_redirect(request, redirect_uri)
 
 
