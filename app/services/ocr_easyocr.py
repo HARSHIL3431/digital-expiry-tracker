@@ -1,5 +1,8 @@
 class EasyOCRDetector:
-    def __init__(self):
+    def __init__(self, reader=None):
+        if reader is not None:
+            self.reader = reader
+            return
         import easyocr
         self.reader = easyocr.Reader(['en'], gpu=False)
 

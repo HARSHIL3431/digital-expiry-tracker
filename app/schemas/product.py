@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 from datetime import date, datetime
 
 
@@ -19,8 +19,7 @@ class ProductResponse(ProductBase):
     id: int
     created_at: datetime
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class ProductWithExpiryResponse(ProductResponse):
@@ -63,5 +62,4 @@ class ProductAlertsResponse(BaseModel):
     expired: list[ProductAlertItemResponse]
     expiring_soon: list[ProductAlertItemResponse]
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)

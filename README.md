@@ -88,7 +88,8 @@ JWT_ALGORITHM=HS256
 ACCESS_TOKEN_EXPIRE_MINUTES=60
 ADMIN_EMAIL=admin@det.com
 DATABASE_URL=sqlite:///./expiry_tracker.db
-TESSERACT_PATH=tesseract
+TESSERACT_CMD=C:\Program Files\Tesseract-OCR\tesseract.exe
+OCR_TIMEOUT_SECONDS=30
 GOOGLE_CLIENT_ID=your_client_id
 GOOGLE_CLIENT_SECRET=your_client_secret
 ```
@@ -121,8 +122,8 @@ GOOGLE_CLIENT_SECRET=your_client_secret
 - `GET /api/v1/products/alerts?soon_days=7`
 
 ### Scan
-- `POST /api/v1/scan/scan/image`
-- `GET /api/v1/scan/scan/scans`
+- `POST /api/v1/scan/image`
+- `GET /api/v1/scan/scans`
 
 ## Frontend Behavior
 
@@ -143,6 +144,52 @@ Focused unit tests:
 ```bash
 pytest -q tests/test_expiry_service.py tests/test_expiry_parser.py
 ```
+
+## Optional OCR Setup (Windows)
+
+The API and tests do not require Tesseract. OCR endpoints return a clear `503`
+error when the engine is unavailable.
+
+1. Install OCR Python packages in the dedicated environment:
+
+   ```bash
+   conda activate expiry-ocr
+   conda install -n expiry-ocr python=3.11
+   pip install -r requirements-ocr.txt
+   ```
+
+2. Install the standalone Windows Tesseract OCR engine from the official
+   Tesseract installer (for example the UB Mannheim build) or with Conda:
+
+   ```bash
+   conda activate expiry-ocr
+   conda install -c conda-forge tesseract
+   ```
+
+   Do not rely on `pip`/Python packages alone; `pytesseract` and `easyocr`
+   are wrappers around the actual engines. `python -m pip install pytesseract`
+   does not install the Windows `tesseract.exe` executable.
+
+3. Verify the standalone engine outside Python:
+
+   ```powershell
+   tesseract --version
+   ```
+
+4. If `tesseract` is not on `PATH`, copy the actual path from Windows and set it
+   in `.env`:
+
+   ```env
+   TESSERACT_CMD=C:\Program Files\Tesseract-OCR\tesseract.exe
+   OCR_TIMEOUT_SECONDS=30
+   ```
+
+   You can leave `TESSERACT_CMD` unset to let the application search common
+   Windows installation locations and `PATH`.
+
+5. PDF/image uploads and OCR requests have a maximum size and timeout as
+   configured by the environment. Missing or corrupt OCR engines never return a
+   successful OCR result.
 
 ## Notes
 

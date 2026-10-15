@@ -1,7 +1,5 @@
-import cv2
-
-
 def preprocess_image(image_path: str):
+    import cv2
     image = cv2.imread(image_path)
     if image is None:
         raise ValueError(f"Invalid image path: {image_path}")

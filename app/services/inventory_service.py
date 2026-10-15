@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import List, Dict
 
 
@@ -20,7 +20,7 @@ class InventoryService:
         Called when user confirms a product name.
         """
         key = product_name.strip().lower()
-        now = datetime.utcnow()
+        now = datetime.now(timezone.utc)
 
         if key in self._inventory:
             self._inventory[key]["count"] += 1
