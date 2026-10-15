@@ -1,287 +1,192 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Digital Expiry Tracker | Enterprise Asset Management</title>
-
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-
-    <!-- FastAPI Static -->
+    <title>Digital Expiry Tracker | Never Miss an Expiry Date Again</title>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="/assets/css/style.css">
 </head>
-
 <body>
-
-<div class="ambient-bg"></div>
-
-<nav>
-
-    <a href="/" class="logo">
-        <div class="logo-icon"></div>
-        ExpiryTracker
-    </a>
-
-    <div class="nav-links">
-        <a href="/#features">Platform</a>
-        <a href="/#demo">Integrations</a>
-        <a href="/#pricing">Pricing</a>
-        <a href="/#company">Company</a>
-    </div>
-
-    <div class="nav-actions">
-        <a href="/app/login" class="btn btn-secondary" style="border:none;background:transparent;">Log in</a>
-        <a href="/app/register" class="btn btn-primary">Start Trial</a>
-    </div>
-
-</nav>
-
-
-<section class="hero">
-
-    <div class="hero-badge">
-        <span class="new">New</span>
-        AI-powered contract parsing is here →
-    </div>
-
-    <h1>Manage digital assets with<br><span>unrivaled precision.</span></h1>
-
-    <p>
-        The enterprise-grade command center for SSL certificates, domains, API keys,
-        and vendor contracts. Never let a critical asset expire unnoticed again.
-    </p>
-
-    <div class="hero-cta">
-        <a href="/app/register" class="btn btn-primary">Start building for free</a>
-        <a href="#demo" class="btn btn-secondary">Request Demo</a>
-    </div>
-
-</section>
-
-
-
-<section class="mockup-container">
-
-<div class="mockup reveal">
-
-<div class="mockup-header">
-<div class="mockup-dot"></div>
-<div class="mockup-dot"></div>
-<div class="mockup-dot"></div>
-
-<div style="flex:1;text-align:center;color:var(--text-muted);font-size:0.75rem;font-family:monospace;">
-app.expirytracker.com
-</div>
-
-</div>
-
-
-<div class="mockup-body">
-
-<div class="mockup-sidebar">
-
-<div class="mockup-line active"></div>
-<div class="mockup-line"></div>
-<div class="mockup-line short"></div>
-
-<div style="margin-top:1.5rem;color:var(--text-muted);font-size:0.75rem;font-weight:600;text-transform:uppercase;">
-Settings
-</div>
-
-<div class="mockup-line"></div>
-<div class="mockup-line short"></div>
-
-</div>
-
-
-<div class="mockup-content">
-
-<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:2rem;">
-<h3 style="margin:0;font-size:1.25rem;">Critical Expirations</h3>
-<div class="btn btn-primary" style="padding:0.4rem 0.8rem;font-size:0.8rem;">+ Add Asset</div>
-</div>
-
-
-<div class="expiry-item danger">
-
-<div>
-<strong style="color:#ef4444;font-size:1rem;display:block;margin-bottom:4px;">
-api.production.internal
-</strong>
-
-<span style="color:var(--text-muted);font-size:0.85rem;background:rgba(255,255,255,0.05);padding:2px 6px;border-radius:4px;">
-SSL Certificate
-</span>
-</div>
-
-<div style="text-align:right;">
-<div style="font-weight:600;color:#ef4444;">Expires in 2 days</div>
-<div style="font-size:0.8rem;color:var(--text-muted);margin-top:4px;">Auto-renew failed</div>
-</div>
-
-</div>
-
-
-<div class="expiry-item warning">
-
-<div>
-<strong style="color:#f59e0b;font-size:1rem;display:block;margin-bottom:4px;">
-Cloudflare Enterprise Contract
-</strong>
-
-<span style="color:var(--text-muted);font-size:0.85rem;background:rgba(255,255,255,0.05);padding:2px 6px;border-radius:4px;">
-Vendor Agreement
-</span>
-</div>
-
-<div style="text-align:right;">
-<div style="font-weight:600;color:#f59e0b;">Expires in 14 days</div>
-<div style="font-size:0.8rem;color:var(--text-muted);margin-top:4px;">Requires manual signature</div>
-</div>
-
-</div>
-
-
-<div class="expiry-item">
-
-<div>
-<strong style="font-size:1rem;display:block;margin-bottom:4px;">
-Stripe API Secret Key
-</strong>
-
-<span style="color:var(--text-muted);font-size:0.85rem;background:rgba(255,255,255,0.05);padding:2px 6px;border-radius:4px;">
-Authentication Matrix
-</span>
-</div>
-
-<div style="text-align:right;">
-<div style="font-weight:600;">Expires in 45 days</div>
-<div style="font-size:0.8rem;color:var(--text-muted);margin-top:4px;">Rotation scheduled</div>
-</div>
-
-</div>
-
-</div>
-</div>
-</div>
-
-</section>
-
-
-
-<section class="features" id="features">
-
-<div class="features-grid">
-
-<div class="feature-card reveal" style="transition-delay:0.1s;">
-<div class="feature-icon">⚡</div>
-<h3>Intelligent Routing</h3>
-<p>
-Establish escalation policies firing webhooks to Slack, Teams, or PagerDuty
-before critical dates hit zero.
-</p>
-</div>
-
-
-<div class="feature-card reveal" style="transition-delay:0.2s;">
-<div class="feature-icon">🔐</div>
-<h3>Enterprise Security</h3>
-<p>
-SOC2 compliant infrastructure with AES-256 encryption and SAML SSO integration.
-</p>
-</div>
-
-
-<div class="feature-card reveal" style="transition-delay:0.3s;">
-<div class="feature-icon">☁️</div>
-<h3>Zero-Touch Discovery</h3>
-<p>
-Connect AWS, Azure, or Google Cloud to automatically detect expiring assets.
-</p>
-</div>
-
-</div>
-
-</section>
-
-
-
-<section class="cta-bottom reveal">
-
-<h2>Ready to secure your assets?</h2>
-
-<p style="color:var(--text-muted);margin-bottom:2.5rem;font-size:1.25rem;">
-Join thousands of modern engineering teams.
-</p>
-
-<a href="/app/register" class="btn btn-primary"
-style="font-size:1.1rem;padding:1rem 2.5rem;">
-Start tracking today
-</a>
-
-</section>
-
-
-
-<footer>
-
-<div>
-<div style="font-weight:700;color:var(--text-main);margin-bottom:8px;">
-ExpiryTracker
-</div>
-
-<div>© 2026 ExpiryTracker Inc. All rights reserved.</div>
-</div>
-
-
-<div style="display:flex;gap:2rem;">
-<a href="#" style="color:var(--text-muted);text-decoration:none;">Privacy Policy</a>
-<a href="#" style="color:var(--text-muted);text-decoration:none;">Terms of Service</a>
-<a href="#" style="color:var(--text-muted);text-decoration:none;">Contact Sales</a>
-</div>
-
-</footer>
-
-
-<script>
-
-document.addEventListener('DOMContentLoaded', () => {
-
-const observer = new IntersectionObserver((entries) => {
-
-entries.forEach(entry => {
-
-if (entry.isIntersecting) {
-
-entry.target.style.opacity = '1';
-entry.target.style.transform = 'translateY(0)';
-observer.unobserve(entry.target);
-
-}
-
-});
-
-}, { threshold:0.1 });
-
-
-document.querySelectorAll('.reveal').forEach((el) => {
-
-el.style.opacity = '0';
-
-if (!el.classList.contains('mockup')) {
-el.style.transform = 'translateY(30px)';
-}
-
-el.style.transition = 'opacity 0.8s ease, transform 0.8s ease';
-
-observer.observe(el);
-
-});
-
-});
-
-</script>
-
+    <div class="ambient-bg"></div>
+
+    <nav>
+        <a href="/" class="logo">
+            <span class="logo-mark"></span>
+            ExpiryTracker
+        </a>
+        <div class="nav-links">
+            <a href="#features">Features</a>
+            <a href="#how-it-works">How It Works</a>
+            <a href="#about">About</a>
+        </div>
+        <div class="nav-actions">
+            <a href="/app/login" class="btn btn-ghost">Log in</a>
+            <a href="/app/register" class="btn btn-primary">Get Started</a>
+        </div>
+    </nav>
+
+    <main class="container">
+        <section class="hero">
+            <div class="hero-grid">
+                <div>
+                    <div class="eyebrow">
+                        <span>New</span>
+                        Smart scan + expiry alerts
+                    </div>
+                    <h1 class="hero-title">
+  <span class="hero-line">Never miss an</span>
+  <span class="hero-line">
+    <span class="hero-highlight">expiry</span>
+  </span>
+  <span class="hero-line">date again.</span>
+</h1>
+                    <p>
+                        Track food, medicine, and daily essentials with a focused digital inventory.
+                        Scan products, organize expiry dates, and act before waste happens.
+                    </p>
+                    <div class="hero-actions">
+                        <a href="/app/register" class="btn btn-primary">Start Tracking</a>
+                        <a href="#features" class="btn btn-secondary">Explore Features</a>
+                    </div>
+                </div>
+
+                <div class="product-preview" aria-label="Product preview">
+                    <div class="preview-header">
+                        <strong>Live Expiry Overview</strong>
+                        <span class="status status-soon">7 day warning</span>
+                    </div>
+                    <div class="preview-kpi">
+                        <div><span>Total</span><strong id="previewTotal">24</strong></div>
+                        <div><span>Safe</span><strong>18</strong></div>
+                        <div><span>Soon</span><strong>4</strong></div>
+                        <div><span>Expired</span><strong>2</strong></div>
+                    </div>
+                    <div class="preview-list">
+                        <div class="preview-row">
+                            <div>
+                                <div class="name">Vitamin D3 Capsules</div>
+                                <div class="meta">Medicine · Qty 1</div>
+                            </div>
+                            <span class="status status-safe">Safe</span>
+                        </div>
+                        <div class="preview-row">
+                            <div>
+                                <div class="name">Organic Milk</div>
+                                <div class="meta">Food · Qty 2</div>
+                            </div>
+                            <span class="status status-soon">4 days</span>
+                        </div>
+                        <div class="preview-row">
+                            <div>
+                                <div class="name">Ibuprofen</div>
+                                <div class="meta">Medicine · Qty 1</div>
+                            </div>
+                            <span class="status status-expired">Expired</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="section" id="features">
+            <div class="section-header">
+                <h2>Everything needed to reduce waste and stay ready.</h2>
+                <p>Real tracking, scan-assisted entry, clear alerts, and secure inventory management all work through the existing Expiry Tracker API.</p>
+            </div>
+            <div class="feature-grid">
+                <article class="feature-card reveal">
+                    <div class="feature-icon-tile"><span class="feature-icon-label">Sharper</span></div>
+                    <h3>Smart Scanning</h3>
+                    <p>Capture a product image, validate the upload, and route it through the OCR and expiry parsing pipeline.</p>
+                </article>
+                <article class="feature-card reveal">
+                    <div class="feature-icon-tile"><span class="feature-icon-label">Alerts</span></div>
+                    <h3>Expiry Alerts</h3>
+                    <p>Statuses update from the real expiry service so safe, expiring, and expired products stand apart clearly.</p>
+                </article>
+                <article class="feature-card reveal">
+                    <div class="feature-icon-tile"><span class="feature-icon-label">Inventory</span></div>
+                    <h3>Inventory Management</h3>
+                    <p>Search, paginate, add, and delete products through the backend endpoints while keeping user ownership enforced.</p>
+                </article>
+                <article class="feature-card reveal">
+                    <div class="feature-icon-tile"><span class="feature-icon-label">Insight</span></div>
+                    <h3>Product Insights</h3>
+                    <p>Track quantity, category, manufacture date, expiry status, and ownership without hardcoding dashboard values.</p>
+                </article>
+            </div>
+        </section>
+
+        <section class="section" id="how-it-works">
+            <div class="section-header">
+                <h2>Scan. Track. Get notified.</h2>
+                <p>A simple three-step workflow keeps expired and nearly expired items visible before they create risk.</p>
+            </div>
+            <div class="steps-grid">
+                <div class="step reveal">
+                    <div class="step-number">1</div>
+                    <h3>Scan</h3>
+                    <p>Upload a supported image and let the existing scan endpoint process the expiry information.</p>
+                </div>
+                <div class="step reveal">
+                    <div class="step-number">2</div>
+                    <h3>Track</h3>
+                    <p>Review products in a structured dashboard with status, days remaining, search, and pagination.</p>
+                </div>
+                <div class="step reveal">
+                    <div class="step-number">3</div>
+                    <h3>Get Notified</h3>
+                    <p>Admin-controlled expiry checks and status calculations highlight items that need action.</p>
+                </div>
+            </div>
+        </section>
+
+        <section class="section reveal">
+            <div class="section-header" id="about">
+                <h2>Built for daily essentials.</h2>
+                <p>The interface is designed as a premium tracker for practical inventory decisions: warm paper surfaces, sharp black borders, yellow action states, and coral warnings.</p>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <div>
+            <strong>ExpiryTracker</strong>
+            <div>Digital expiry inventory for food, medicine, and daily essentials.</div>
+        </div>
+        <div style="display:flex;gap:1.5rem;flex-wrap:wrap;">
+            <a href="/app/login">Login</a>
+            <a href="/app/register">Register</a>
+            <a href="/health">Health</a>
+        </div>
+    </footer>
+
+    <script>
+        (function () {
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('revealed');
+                        observer.unobserve(entry.target);
+                    }
+                });
+            }, { threshold: 0.12 });
+
+            document.querySelectorAll('.reveal').forEach((el) => {
+                el.style.opacity = '0';
+                el.style.transform = 'translateY(24px)';
+                el.style.transition = 'opacity .6s ease, transform .6s ease';
+                observer.observe(el);
+            });
+
+            setTimeout(() => {
+                document.querySelectorAll('.reveal').forEach((el) => {
+                    el.style.opacity = '1';
+                    el.style.transform = 'translateY(0)';
+                });
+            }, 1200);
+        })();
+    </script>
 </body>
 </html>

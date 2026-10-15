@@ -326,9 +326,9 @@ def get_products_by_expiry_status(
             "days_left": expiry_info["days_left"]
         }
 
-        if expiry_info["status"] == "EXPIRED":
+        if expiry_info["status"] == "expired":
             grouped["expired"].append(product_data)
-        elif expiry_info["status"] == "NEAR_EXPIRY":
+        elif expiry_info["status"] == "near_expiry":
             grouped["near_expiry"].append(product_data)
         else:
             grouped["fresh"].append(product_data)

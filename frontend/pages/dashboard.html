@@ -6,1125 +6,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Digital Expiry Tracker | Operations Center</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <style>
-        :root {
-            --bg-master: #0F172A;
-            --bg-panel: #1E293B;
-            --bg-panel-hover: #334155;
-            --accent: #06B6D4;
-            --accent-hover: #0891B2;
-            --text-main: #F8FAFC;
-            --text-muted: #94A3B8;
-            --border: #334155;
-            --glass-bg: rgba(30, 41, 59, 0.48);
-            --glass-bg-soft: rgba(30, 41, 59, 0.34);
-            --glass-border: rgba(148, 163, 184, 0.2);
-            --glow-cyan: rgba(6, 182, 212, 0.24);
-            --glow-purple: rgba(129, 140, 248, 0.18);
+    <link rel="stylesheet" href="/assets/css/style.css">
+    <link rel="stylesheet" href="/assets/css/dashboard.css">
 
-            --risk-low: #10B981;
-            --risk-med: #F59E0B;
-            --risk-high: #EF4444;
-
-            --radius: 6px;
-            --transition: all 0.24s ease;
-        }
-
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Inter', sans-serif;
-            letter-spacing: -0.01em;
-        }
-
-        body {
-            background: radial-gradient(circle at 12% -10%, rgba(6, 182, 212, 0.18), transparent 38%),
-                radial-gradient(circle at 88% 0%, rgba(99, 102, 241, 0.16), transparent 32%),
-                linear-gradient(160deg, #0b1328 0%, #0f172a 48%, #0b1220 100%);
-            color: var(--text-main);
-            min-height: 100vh;
-            display: flex;
-            overflow-x: hidden;
-            -webkit-font-smoothing: antialiased;
-            position: relative;
-        }
-
-        body::before,
-        body::after {
-            content: "";
-            position: fixed;
-            width: 340px;
-            height: 340px;
-            border-radius: 999px;
-            pointer-events: none;
-            filter: blur(56px);
-            z-index: 0;
-        }
-
-        body::before {
-            top: 8%;
-            right: -90px;
-            background: var(--glow-cyan);
-        }
-
-        body::after {
-            left: -110px;
-            bottom: 5%;
-            background: var(--glow-purple);
-        }
-
-        /* Layout Structure */
-        .app-layout {
-            display: flex;
-            width: 100%;
-            height: 100vh;
-            position: relative;
-            z-index: 1;
-        }
-
-        /* Left Sidebar */
-        .sidebar {
-            width: 240px;
-            background: linear-gradient(180deg, rgba(30, 41, 59, 0.72) 0%, rgba(15, 23, 42, 0.72) 100%);
-            border-right: 1px solid var(--glass-border);
-            backdrop-filter: blur(14px);
-            display: flex;
-            flex-direction: column;
-            flex-shrink: 0;
-        }
-
-        .brand {
-            height: 60px;
-            display: flex;
-            align-items: center;
-            padding: 0 1.25rem;
-            border-bottom: 1px solid var(--glass-border);
-            font-weight: 700;
-            font-size: 1.1rem;
-            color: var(--text-main);
-            gap: 8px;
-        }
-
-        .brand-icon {
-            width: 16px;
-            height: 16px;
-            background-color: var(--accent);
-            border-radius: 2px;
-        }
-
-        .nav-menu {
-            padding: 1.5rem 0.75rem;
-            display: flex;
-            flex-direction: column;
-            gap: 0.25rem;
-            flex-grow: 1;
-        }
-
-        .nav-item {
-            padding: 0.6rem 0.75rem;
-            border-radius: var(--radius);
-            color: var(--text-muted);
-            font-size: 0.85rem;
-            font-weight: 500;
-            cursor: pointer;
-            transition: var(--transition);
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            text-decoration: none;
-            position: relative;
-        }
-
-        .nav-item:hover {
-            background-color: rgba(148, 163, 184, 0.12);
-            color: var(--text-main);
-            transform: translateX(1px);
-        }
-
-        .nav-item.active {
-            background-color: rgba(6, 182, 212, 0.16);
-            color: var(--accent);
-            border-left: 3px solid var(--accent);
-            border-radius: 0 var(--radius) var(--radius) 0;
-            box-shadow: inset 0 0 0 1px rgba(6, 182, 212, 0.2), 0 0 20px rgba(6, 182, 212, 0.12);
-        }
-
-        .nav-item.active::after {
-            content: "";
-            position: absolute;
-            right: 8px;
-            width: 6px;
-            height: 6px;
-            border-radius: 999px;
-            background: #67e8f9;
-            box-shadow: 0 0 8px rgba(103, 232, 249, 0.8);
-        }
-
-        .user-profile {
-            padding: 1rem;
-            border-top: 1px solid var(--glass-border);
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            font-size: 0.85rem;
-            background-color: rgba(2, 6, 23, 0.26);
-        }
-
-        .avatar {
-            width: 32px;
-            height: 32px;
-            background: radial-gradient(circle at 35% 30%, rgba(6, 182, 212, 0.5), rgba(6, 182, 212, 0.15));
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: 600;
-            color: #e2e8f0;
-            border: 1px solid rgba(125, 211, 252, 0.45);
-            box-shadow: 0 0 0 2px rgba(6, 182, 212, 0.16);
-        }
-
-        /* Main Content wrapper */
-        .main-wrapper {
-            flex-grow: 1;
-            display: flex;
-            flex-direction: column;
-            overflow-y: auto;
-            position: relative;
-            /* 3D isolation context */
-        }
-
-        /* Top Header */
-        .header {
-            height: 60px;
-            background: rgba(15, 23, 42, 0.54);
-            border-bottom: 1px solid var(--glass-border);
-            backdrop-filter: blur(12px);
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 0 2rem;
-            position: sticky;
-            top: 0;
-            z-index: 10;
-        }
-
-        .header-title {
-            font-size: 1.1rem;
-            font-weight: 600;
-        }
-
-        .header-actions {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-        }
-
-        .last-updated {
-            font-size: 0.76rem;
-            color: var(--text-muted);
-            display: inline-flex;
-            align-items: center;
-            gap: 0.4rem;
-            padding: 0.35rem 0.6rem;
-            border-radius: 999px;
-            border: 1px solid var(--glass-border);
-            background: rgba(15, 23, 42, 0.5);
-        }
-
-        .last-updated-dot {
-            width: 7px;
-            height: 7px;
-            border-radius: 999px;
-            background: #34d399;
-            box-shadow: 0 0 0 4px rgba(52, 211, 153, 0.14);
-        }
-
-        .role-badge {
-            font-size: 0.75rem;
-            padding: 2px 8px;
-            background-color: var(--bg-panel);
-            border: 1px solid var(--border);
-            border-radius: var(--radius);
-            color: var(--text-muted);
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-        }
-
-        .notification {
-            position: relative;
-            cursor: pointer;
-            color: var(--text-muted);
-            display: flex;
-            align-items: center;
-            padding: 0.35rem;
-            border-radius: 999px;
-            transition: var(--transition);
-        }
-
-        .notification:hover {
-            color: var(--text-main);
-            background: rgba(148, 163, 184, 0.12);
-        }
-
-        .notification-badge {
-            position: absolute;
-            top: -4px;
-            right: -6px;
-            background-color: var(--risk-high);
-            color: white;
-            font-size: 0.65rem;
-            font-weight: 700;
-            width: 16px;
-            height: 16px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 50%;
-            border: 2px solid var(--bg-master);
-        }
-
-        .notification-dropdown {
-            position: absolute;
-            top: 30px;
-            right: -10px;
-            width: 320px;
-            background: rgba(15, 23, 42, 0.82);
-            border: 1px solid var(--glass-border);
-            backdrop-filter: blur(14px);
-            border-radius: var(--radius);
-            box-shadow: 0 16px 36px rgba(2, 6, 23, 0.45);
-            display: none;
-            flex-direction: column;
-            z-index: 100;
-        }
-
-        .notif-section-title {
-            font-size: 0.72rem;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.08em;
-            color: var(--text-muted);
-            padding: 0.55rem 1rem 0.45rem 1rem;
-            background: rgba(2, 6, 23, 0.25);
-            border-top: 1px solid rgba(148, 163, 184, 0.1);
-            border-bottom: 1px solid rgba(148, 163, 184, 0.1);
-        }
-
-        .user-menu {
-            position: relative;
-        }
-
-        .user-menu-trigger {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.55rem;
-            padding: 0.3rem 0.5rem;
-            border-radius: 999px;
-            border: 1px solid var(--glass-border);
-            background: rgba(15, 23, 42, 0.46);
-            cursor: pointer;
-            color: var(--text-main);
-            transition: var(--transition);
-        }
-
-        .user-menu-trigger:hover {
-            border-color: rgba(148, 163, 184, 0.48);
-            background: rgba(30, 41, 59, 0.58);
-        }
-
-        .header-avatar {
-            width: 28px;
-            height: 28px;
-            border-radius: 999px;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 0.75rem;
-            font-weight: 700;
-            color: #e2e8f0;
-            border: 1px solid rgba(125, 211, 252, 0.42);
-            background: radial-gradient(circle at 35% 30%, rgba(6, 182, 212, 0.6), rgba(6, 182, 212, 0.2));
-        }
-
-        .user-menu-dropdown {
-            position: absolute;
-            top: 40px;
-            right: 0;
-            min-width: 180px;
-            border-radius: var(--radius);
-            border: 1px solid var(--glass-border);
-            background: rgba(15, 23, 42, 0.86);
-            backdrop-filter: blur(14px);
-            box-shadow: 0 16px 36px rgba(2, 6, 23, 0.45);
-            overflow: hidden;
-            display: none;
-            z-index: 120;
-        }
-
-        .user-menu-dropdown.show {
-            display: block;
-        }
-
-        .user-menu-item {
-            width: 100%;
-            border: 0;
-            border-bottom: 1px solid rgba(148, 163, 184, 0.12);
-            background: transparent;
-            color: var(--text-main);
-            padding: 0.66rem 0.85rem;
-            text-align: left;
-            font-size: 0.82rem;
-            display: inline-flex;
-            align-items: center;
-            gap: 0.5rem;
-            cursor: pointer;
-        }
-
-        .user-menu-item:last-child {
-            border-bottom: none;
-        }
-
-        .user-menu-item:hover {
-            background: rgba(51, 65, 85, 0.45);
-        }
-
-        .notification-dropdown.show {
-            display: flex;
-        }
-
-        .dropdown-header {
-            padding: 0.75rem 1rem;
-            border-bottom: 1px solid var(--border);
-            font-size: 0.85rem;
-            font-weight: 600;
-            display: flex;
-            justify-content: space-between;
-        }
-
-        .dropdown-item {
-            padding: 0.75rem 1rem;
-            border-bottom: 1px solid var(--border);
-            font-size: 0.8rem;
-            transition: var(--transition);
-            cursor: pointer;
-        }
-
-        .dropdown-item:hover {
-            background-color: var(--bg-panel-hover);
-        }
-
-        .dropdown-item:last-child {
-            border-bottom: none;
-        }
-
-        .notif-clickable {
-            cursor: pointer;
-        }
-
-        .notif-clickable:hover {
-            background-color: rgba(6, 182, 212, 0.1) !important;
-        }
-
-        /* Content Area */
-        .content {
-            padding: 2rem;
-            display: none;
-            /* JS will toggle visibility */
-            position: relative;
-        }
-
-        .content.active {
-            display: block;
-        }
-
-        /* Typography & Globals */
-        h2 {
-            font-size: 1.5rem;
-            font-weight: 600;
-            margin-bottom: 1.5rem;
-        }
-
-        h3 {
-            font-size: 1.1rem;
-            font-weight: 500;
-            margin-bottom: 1rem;
-        }
-
-        .btn {
-            background: linear-gradient(140deg, rgba(30, 41, 59, 0.7), rgba(15, 23, 42, 0.75));
-            color: var(--text-main);
-            border: 1px solid var(--glass-border);
-            padding: 0.5rem 1rem;
-            border-radius: var(--radius);
-            font-size: 0.85rem;
-            font-weight: 500;
-            cursor: pointer;
-            transition: var(--transition);
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .btn:hover:not(:disabled) {
-            transform: translateY(-1px);
-            border-color: rgba(148, 163, 184, 0.45);
-            box-shadow: 0 8px 18px rgba(2, 6, 23, 0.32);
-        }
-
-        .btn:active:not(:disabled) {
-            transform: translateY(0) scale(0.98);
-        }
-
-        .btn-primary {
-            background: linear-gradient(140deg, #22d3ee 0%, #06b6d4 42%, #0284c7 100%);
-            color: #032434;
-            border-color: rgba(103, 232, 249, 0.6);
-            font-weight: 600;
-            box-shadow: 0 0 0 1px rgba(103, 232, 249, 0.3), 0 8px 20px rgba(6, 182, 212, 0.28);
-        }
-
-        .btn-primary:hover:not(:disabled) {
-            background: linear-gradient(140deg, #67e8f9 0%, #06b6d4 48%, #0284c7 100%);
-            border-color: rgba(165, 243, 252, 0.8);
-            box-shadow: 0 0 0 1px rgba(103, 232, 249, 0.35), 0 10px 26px rgba(6, 182, 212, 0.34);
-        }
-
-        .btn:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-        }
-
-        .card {
-            background: linear-gradient(140deg, var(--glass-bg) 0%, var(--glass-bg-soft) 100%);
-            border: 1px solid var(--glass-border);
-            backdrop-filter: blur(14px);
-            border-radius: var(--radius);
-            padding: 1.5rem;
-            position: relative;
-            box-shadow: inset 0 1px 0 rgba(226, 232, 240, 0.06), 0 10px 24px rgba(2, 6, 23, 0.32);
-            transition: var(--transition);
-        }
-
-        .card:hover {
-            transform: translateY(-2px);
-            border-color: rgba(125, 211, 252, 0.4);
-        }
-
-        /* ----------------------- DASHBOARD PAGE ----------------------- */
-        .kpi-grid {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 1.5rem;
-            margin-bottom: 2rem;
-        }
-
-        .kpi-card {
-            display: flex;
-            flex-direction: column;
-            gap: 0.5rem;
-            overflow: hidden;
-        }
-
-        .kpi-card::after {
-            content: "";
-            position: absolute;
-            inset: auto -25% -55% auto;
-            width: 160px;
-            height: 160px;
-            border-radius: 999px;
-            background: radial-gradient(circle, rgba(6, 182, 212, 0.18), transparent 68%);
-            pointer-events: none;
-        }
-
-        .kpi-title {
-            color: var(--text-muted);
-            font-size: 0.8rem;
-            text-transform: uppercase;
-            font-weight: 600;
-            letter-spacing: 0.05em;
-        }
-
-        .kpi-value {
-            font-size: 2.2rem;
-            font-weight: 700;
-            letter-spacing: -0.04em;
-        }
-
-        .kpi-sub {
-            font-size: 0.75rem;
-            color: var(--text-muted);
-            display: flex;
-            align-items: center;
-            gap: 4px;
-        }
-
-        .kpi-sub.positive {
-            color: var(--risk-low);
-        }
-
-        .kpi-sub.negative {
-            color: var(--risk-high);
-        }
-
-        .dashboard-main-grid {
-            display: grid;
-            grid-template-columns: 2fr 1fr;
-            gap: 1.5rem;
-        }
-
-        .chart-placeholder {
-            width: 100%;
-            height: 250px;
-            background: repeating-linear-gradient(45deg,
-                    var(--bg-master),
-                    var(--bg-master) 10px,
-                    transparent 10px,
-                    transparent 20px);
-            border: 1px dashed var(--border);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: var(--text-muted);
-            font-family: monospace;
-            font-size: 0.85rem;
-        }
-
-        .chart-wrap {
-            width: 100%;
-            height: 250px;
-            border-radius: var(--radius);
-            border: 1px solid var(--glass-border);
-            background: rgba(2, 6, 23, 0.2);
-            padding: 0.75rem 0.5rem 0.35rem 0.35rem;
-        }
-
-        .alert-panel {
-            display: flex;
-            flex-direction: column;
-            gap: 1rem;
-        }
-
-        .alert-item {
-            padding: 1rem;
-            background-color: rgba(15, 23, 42, 0.4);
-            border: 1px solid rgba(148, 163, 184, 0.16);
-            border-left: 3px solid var(--accent);
-            border-radius: 0 var(--radius) var(--radius) 0;
-            font-size: 0.85rem;
-        }
-
-        .alert-item.high {
-            border-left-color: var(--risk-high);
-        }
-
-        .alert-item.warn {
-            border-left-color: var(--risk-med);
-        }
-
-        .status-banner {
-            margin: 1rem 2rem 0 2rem;
-            padding: 0.75rem 1rem;
-            border: 1px solid var(--border);
-            border-radius: var(--radius);
-            font-size: 0.85rem;
-            display: none;
-        }
-
-        .status-banner.info {
-            border-color: rgba(6, 182, 212, 0.3);
-            background-color: rgba(6, 182, 212, 0.08);
-            color: var(--text-main);
-        }
-
-        .status-banner.error {
-            border-color: rgba(239, 68, 68, 0.4);
-            background-color: rgba(239, 68, 68, 0.12);
-            color: #fecaca;
-        }
-
-        .status-banner.success {
-            border-color: rgba(16, 185, 129, 0.35);
-            background-color: rgba(16, 185, 129, 0.1);
-            color: #bbf7d0;
-        }
-
-        /* ----------------------- PRODUCT MGMT ----------------------- */
-        .page-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 1.5rem;
-        }
-
-        .table-container {
-            width: 100%;
-            overflow-x: auto;
-            border: 1px solid var(--glass-border);
-            border-radius: var(--radius);
-            background: rgba(15, 23, 42, 0.42);
-            backdrop-filter: blur(12px);
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 0.85rem;
-        }
-
-        th {
-            text-align: left;
-            padding: 0.95rem 1rem;
-            background: rgba(15, 23, 42, 0.66);
-            color: var(--text-muted);
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-            font-size: 0.75rem;
-            border-bottom: 1px solid var(--glass-border);
-        }
-
-        td {
-            padding: 0.95rem 1rem;
-            border-bottom: 1px solid rgba(148, 163, 184, 0.1);
-            vertical-align: middle;
-        }
-
-        tr:last-child td {
-            border-bottom: none;
-        }
-
-        tr:hover td {
-            background-color: rgba(51, 65, 85, 0.28);
-        }
-
-        tr {
-            transition: background-color 0.22s ease;
-        }
-
-        .row-highlight td {
-            background: rgba(34, 211, 238, 0.12) !important;
-            box-shadow: inset 0 0 0 1px rgba(34, 211, 238, 0.28);
-        }
-
-        .tag {
-            padding: 3px 9px;
-            border-radius: var(--radius);
-            font-size: 0.72rem;
-            font-weight: 600;
-            background: rgba(15, 23, 42, 0.76);
-            border: 1px solid var(--glass-border);
-        }
-
-        .risk-dot {
-            display: inline-block;
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-            margin-right: 6px;
-        }
-
-        .bg-low {
-            background-color: var(--risk-low);
-        }
-
-        .bg-med {
-            background-color: var(--risk-med);
-        }
-
-        .bg-high {
-            background-color: var(--risk-high);
-        }
-
-        .action-flex {
-            display: flex;
-            gap: 0.5rem;
-        }
-
-        .icon-btn {
-            width: 30px;
-            height: 30px;
-            padding: 0;
-            justify-content: center;
-            border-radius: 8px;
-        }
-
-        .icon-btn.delete {
-            color: #fca5a5;
-            border-color: rgba(239, 68, 68, 0.35);
-            background: rgba(239, 68, 68, 0.12);
-        }
-
-        .icon-btn.delete:hover:not(:disabled) {
-            border-color: rgba(248, 113, 113, 0.55);
-            background: rgba(239, 68, 68, 0.2);
-        }
-
-        .status-pill {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            min-width: 94px;
-            padding: 0.26rem 0.52rem;
-            border-radius: 999px;
-            font-size: 0.7rem;
-            font-weight: 700;
-            letter-spacing: 0.05em;
-            border: 1px solid transparent;
-            text-transform: uppercase;
-        }
-
-        .status-pill.safe {
-            color: #86efac;
-            background: rgba(16, 185, 129, 0.16);
-            border-color: rgba(16, 185, 129, 0.34);
-        }
-
-        .status-pill.expiring {
-            color: #fde68a;
-            background: rgba(245, 158, 11, 0.16);
-            border-color: rgba(245, 158, 11, 0.34);
-        }
-
-        .status-pill.expired {
-            color: #fca5a5;
-            background: rgba(239, 68, 68, 0.16);
-            border-color: rgba(239, 68, 68, 0.34);
-        }
-
-        .empty-state {
-            text-align: center;
-            padding: 2.25rem 1rem;
-        }
-
-        .empty-state-icon {
-            width: 42px;
-            height: 42px;
-            border-radius: 12px;
-            margin: 0 auto 0.7rem auto;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: #67e8f9;
-            background: rgba(6, 182, 212, 0.16);
-            border: 1px solid rgba(6, 182, 212, 0.38);
-            box-shadow: 0 0 22px rgba(6, 182, 212, 0.15);
-        }
-
-        .empty-state-title {
-            font-size: 0.95rem;
-            font-weight: 600;
-            color: var(--text-main);
-            margin-bottom: 0.25rem;
-        }
-
-        .empty-state-text {
-            font-size: 0.82rem;
-            color: var(--text-muted);
-        }
-
-        .timeline {
-            position: relative;
-            padding-left: 0.35rem;
-        }
-
-        .timeline::before {
-            content: "";
-            position: absolute;
-            left: 20px;
-            top: 6px;
-            bottom: 6px;
-            width: 2px;
-            background: linear-gradient(180deg, rgba(6, 182, 212, 0.45), rgba(148, 163, 184, 0.18));
-        }
-
-        .timeline-item {
-            position: relative;
-            display: grid;
-            grid-template-columns: 28px 1fr;
-            gap: 0.85rem;
-            margin-bottom: 0.7rem;
-        }
-
-        .timeline-item:last-child {
-            margin-bottom: 0;
-        }
-
-        .timeline-icon {
-            width: 28px;
-            height: 28px;
-            border-radius: 999px;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            border: 1px solid var(--glass-border);
-            background: rgba(30, 41, 59, 0.78);
-            z-index: 1;
-        }
-
-        .timeline-icon.login {
-            color: #67e8f9;
-        }
-
-        .timeline-icon.create {
-            color: #86efac;
-        }
-
-        .timeline-icon.delete {
-            color: #fca5a5;
-        }
-
-        .timeline-icon.notice {
-            color: #fde68a;
-        }
-
-        .timeline-content {
-            background: rgba(15, 23, 42, 0.36);
-            border: 1px solid rgba(148, 163, 184, 0.14);
-            border-radius: var(--radius);
-            padding: 0.6rem 0.75rem;
-        }
-
-        .timeline-title {
-            font-size: 0.78rem;
-            font-weight: 700;
-            letter-spacing: 0.04em;
-            text-transform: uppercase;
-            margin-bottom: 0.25rem;
-        }
-
-        .table-skeleton {
-            height: 16px;
-            border-radius: 6px;
-            background: linear-gradient(90deg, rgba(51, 65, 85, 0.45) 20%, rgba(71, 85, 105, 0.85) 50%, rgba(51, 65, 85, 0.45) 80%);
-            background-size: 220% 100%;
-            animation: shimmer 1.3s infinite linear;
-        }
-
-        @keyframes shimmer {
-            0% { background-position: 220% 0; }
-            100% { background-position: -220% 0; }
-        }
-
-        .fade-up {
-            animation: fadeUp .45s ease both;
-        }
-
-        @keyframes fadeUp {
-            from {
-                opacity: 0;
-                transform: translateY(8px);
-            }
-
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        /* Modal */
-        .modal-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background-color: rgba(15, 23, 42, 0.8);
-            display: none;
-            align-items: center;
-            justify-content: center;
-            z-index: 1000;
-        }
-
-        .modal-overlay.active {
-            display: flex;
-        }
-
-        .modal {
-            background-color: var(--bg-panel);
-            border: 1px solid var(--border);
-            border-radius: var(--radius);
-            width: 100%;
-            max-width: 480px;
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6);
-        }
-
-        .modal-header {
-            padding: 1.25rem 1.5rem;
-            border-bottom: 1px solid var(--border);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            font-weight: 600;
-        }
-
-        .modal-body {
-            padding: 1.5rem;
-        }
-
-        .modal-footer {
-            padding: 1.25rem 1.5rem;
-            border-top: 1px solid var(--border);
-            display: flex;
-            justify-content: flex-end;
-            gap: 1rem;
-            background-color: rgba(0, 0, 0, 0.1);
-        }
-
-        .form-group {
-            margin-bottom: 1rem;
-        }
-
-        .form-group label {
-            display: block;
-            font-size: 0.8rem;
-            color: var(--text-muted);
-            margin-bottom: 0.4rem;
-        }
-
-        .form-control {
-            width: 100%;
-            background-color: var(--bg-master);
-            border: 1px solid var(--border);
-            color: var(--text-main);
-            padding: 0.6rem 0.8rem;
-            border-radius: var(--radius);
-            font-size: 0.85rem;
-            transition: var(--transition);
-        }
-
-        .form-control:focus {
-            outline: none;
-            border-color: var(--accent);
-        }
-
-        /* ----------------------- AI INTELLIGENCE ----------------------- */
-        .ai-grid {
-            display: grid;
-            grid-template-columns: 1fr 2fr;
-            gap: 1.5rem;
-        }
-
-        .ai-panel {
-            background: linear-gradient(180deg, var(--bg-panel) 0%, rgba(30, 41, 59, 0.5) 100%);
-            border: 1px solid var(--border);
-            border-top: 2px solid var(--accent);
-        }
-
-        .ai-metric {
-            margin-top: 1.5rem;
-            padding-top: 1.5rem;
-            border-top: 1px dashed var(--border);
-        }
-
-        .ai-metric-val {
-            font-family: monospace;
-            font-size: 1.5rem;
-            color: var(--accent);
-        }
-
-        .code-block {
-            background-color: var(--bg-master);
-            padding: 1rem;
-            border: 1px solid var(--border);
-            border-radius: var(--radius);
-            font-family: monospace;
-            font-size: 0.8rem;
-            color: var(--text-muted);
-            white-space: pre-wrap;
-        }
-
-        /* ----------------------- SETTINGS / ALERTS ----------------------- */
-        .settings-list {
-            display: flex;
-            flex-direction: column;
-            gap: 1.5rem;
-        }
-
-        .setting-row {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding-bottom: 1.5rem;
-            border-bottom: 1px solid var(--border);
-        }
-
-        .setting-info h4 {
-            font-size: 0.95rem;
-            font-weight: 500;
-            margin-bottom: 4px;
-        }
-
-        .setting-info p {
-            font-size: 0.8rem;
-            color: var(--text-muted);
-        }
-
-        /* Toggle Switch */
-        .switch {
-            position: relative;
-            display: inline-block;
-            width: 44px;
-            height: 24px;
-        }
-
-        .switch input {
-            opacity: 0;
-            width: 0;
-            height: 0;
-        }
-
-        .slider {
-            position: absolute;
-            cursor: pointer;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background-color: var(--bg-master);
-            border: 1px solid var(--border);
-            transition: .4s;
-            border-radius: 24px;
-        }
-
-        .slider:before {
-            position: absolute;
-            content: "";
-            height: 16px;
-            width: 16px;
-            left: 3px;
-            bottom: 3px;
-            background-color: var(--text-muted);
-            transition: .4s;
-            border-radius: 50%;
-        }
-
-        input:checked+.slider {
-            background-color: var(--accent);
-            border-color: var(--accent);
-        }
-
-        input:checked+.slider:before {
-            transform: translateX(20px);
-            background-color: #000;
-        }
-
-        input:disabled+.slider {
-            opacity: 0.5;
-            cursor: not-allowed;
-        }
-
-        /* Hide elements based on role */
-        .role-viewer .req-manager,
-        .role-viewer .req-admin {
-            display: none !important;
-        }
-
-        .role-manager .req-admin {
-            display: none !important;
-        }
-    </style>
 </head>
 
 <body class="role-admin" id="appBody">
@@ -1233,7 +117,7 @@
                         </select>
                     </div>
 
-                    <div class="notification" onclick="toggleNotifications()">
+                    <div class="notification" role="button" tabindex="0" aria-haspopup="menu" aria-expanded="false" aria-controls="notifDropdown" aria-label="System alerts" onclick="toggleNotifications(event)" onkeydown="handleTopbarTriggerKeydown(event, 'notifications')">
                         <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                 d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9">
@@ -1241,7 +125,7 @@
                         </svg>
                         <div class="notification-badge" id="notifCount">3</div>
 
-                        <div class="notification-dropdown" id="notifDropdown">
+                        <div class="notification-dropdown" id="notifDropdown" role="menu" aria-label="System alerts" aria-hidden="true">
                             <div class="dropdown-header">
                                 <span>System Alerts</span>
                                 <span style="color: var(--accent); font-size: 0.75rem; cursor: pointer;">Mark all
@@ -1251,21 +135,21 @@
                         </div>
                     </div>
                     <div class="user-menu">
-                        <button class="user-menu-trigger" onclick="toggleUserMenu()">
+                        <button class="user-menu-trigger" type="button" aria-haspopup="menu" aria-expanded="false" aria-controls="userMenuDropdown" onclick="toggleUserMenu(event)">
                             <span id="headerAvatar" class="header-avatar">U</span>
                             <span style="font-size: 0.8rem; color: var(--text-muted);">Account</span>
                             <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
                             </svg>
                         </button>
-                        <div id="userMenuDropdown" class="user-menu-dropdown">
-                            <button class="user-menu-item" onclick="showProfile()">
+                        <div id="userMenuDropdown" class="user-menu-dropdown" role="menu" aria-label="Account menu" aria-hidden="true">
+                            <button class="user-menu-item" role="menuitem" onclick="showProfile()">
                                 <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
                                 </svg>
                                 Profile
                             </button>
-                            <button class="user-menu-item" onclick="handleLogout()">
+                            <button class="user-menu-item" role="menuitem" onclick="handleLogout()">
                                 <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a2 2 0 01-2 2H5a2 2 0 01-2-2V7a2 2 0 012-2h6a2 2 0 012 2v1"></path>
                                 </svg>
@@ -1416,7 +300,7 @@
 
                         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.5rem;">
                             <div
-                                style="padding: 1rem; background-color: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.3); border-radius: var(--radius);">
+                                style="padding: 1rem; background-color: rgba(255, 128, 104, 0.18); border: 1px solid rgba(239, 68, 68, 0.3); border-radius: var(--radius);">
                                 <div style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase;">
                                     Probability of Loss</div>
                                 <div style="font-size: 1.5rem; font-weight: 700; color: var(--risk-high);">72%</div>
@@ -1447,20 +331,23 @@
                                 <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path>
                                 </svg>
-                                Upload Image
+                                Choose Product Image
                             </button>
-                            <span id="scanPreviewMeta" style="font-size: 0.78rem; color: var(--text-muted);">No scan yet</span>
+                            <button id="startScanBtn" class="btn btn-primary" type="button" onclick="startScanAnalysis()" disabled style="display:none;">
+                                Start Analysis
+                            </button>
+                            <span id="scanPreviewMeta" style="font-size: 0.78rem; color: var(--text-muted);">No image selected</span>
                         </div>
 
                         <input type="file" id="scanUploadInput" accept="image/*" style="display:none" onchange="handleScanFileSelection(event)" />
 
-                        <div id="scanPreviewContainer" style="display:none; position:relative; width:100%; max-width:720px; border:1px solid var(--border); border-radius: var(--radius); overflow:hidden; background: rgba(2, 6, 23, 0.55);">
+                        <div id="scanPreviewContainer" style="display:none; position:relative; width:100%; max-width:720px; border:1px solid var(--border); border-radius: var(--radius); overflow:hidden; background: #F1EFE7;">
                             <img id="scanPreviewImage" alt="Scan preview" style="display:block; width:100%; height:auto;" />
                             <canvas id="scanOverlayCanvas" style="position:absolute; top:0; left:0; pointer-events:none;"></canvas>
                         </div>
 
                         <!-- 🆕 CONFIRMATION BOX (Task 2) 🆕 -->
-                        <div id="confirmBox" style="display: none; margin-top: 20px; padding: 15px; background: #0f172a; border: 1px solid #334155; border-radius: 8px; position: relative; z-index: 9999; width: 100%; max-width: 720px;">
+                        <div id="confirmBox" style="display: none; margin-top: 20px; padding: 15px; background: #FFFFFF; border: 2px solid #111111; border-radius: 8px; position: relative; z-index: 9999; width: 100%; max-width: 720px;">
                             <h3 style="margin-bottom: 1rem; color: var(--accent);">✅ Confirm Product Details</h3>
                             <p id="confidenceWarning" style="color: orange; margin-bottom: 0.75rem;"></p>
                             
@@ -1614,7 +501,7 @@
         const ALERT_API_BASE = '/api/v1/products/alerts?soon_days=7';
         const LOGS_API_BASE = '/api/v1/logs';
         const ANALYTICS_API_BASE = '/api/v1/analytics';
-        const SCAN_API_BASE = '/api/v1/scan/scan';
+        const SCAN_API_BASE = '/api/v1/scan';
         let currentRole = 'admin'; // admin | manager | viewer
         let products = [];
         let activityLogs = [];
@@ -1639,6 +526,8 @@
         let notificationItems = [];
         const notificationReadState = {};
         let lastScanPreviewObjectUrl = null;
+let pendingScanFile = null;
+let scanInProgress = false;
 
         function getAuthToken() {
             return localStorage.getItem('auth_token');
@@ -1880,8 +769,7 @@
         function showProfile() {
             if (!currentUser) return;
             setStatus(`Profile: ${currentUser.name} (${currentUser.email})`, 'info', true);
-            const menu = document.getElementById('userMenuDropdown');
-            if (menu) menu.classList.remove('show');
+            setTopbarDropdown(null);
         }
 
         function toggleUserMenu() {
@@ -2004,7 +892,7 @@
             switchView('products', productsNav);
 
             const notifDropdown = document.getElementById('notifDropdown');
-            if (notifDropdown) notifDropdown.classList.remove('show');
+            if (notifDropdown) setTopbarDropdown(null);
 
             const rowId = `product-row-${productId}`;
             const row = document.getElementById(rowId);
@@ -2019,6 +907,7 @@
         }
 
         function handleLogout() {
+            setTopbarDropdown(null);
             localStorage.removeItem('auth_token');
             window.location.replace('/app/login');
         }
@@ -2106,13 +995,13 @@
                     datasets: [{
                         label: 'Expiry Risk Trend',
                         data: dataPoints,
-                        borderColor: '#22d3ee',
+                        borderColor: '#BF9B00',
                         backgroundColor: 'rgba(34, 211, 238, 0.18)',
                         fill: true,
                         tension: 0.35,
                         pointRadius: 3,
-                        pointBackgroundColor: '#67e8f9',
-                        pointBorderColor: '#083344'
+                        pointBackgroundColor: '#BF9B00',
+                        pointBorderColor: '#111111'
                     }]
                 },
                 options: {
@@ -2123,11 +1012,11 @@
                     },
                     scales: {
                         x: {
-                            ticks: { color: '#94a3b8', font: { size: 11 } },
+                            ticks: { color: '#555555', font: { size: 11 } },
                             grid: { color: 'rgba(148, 163, 184, 0.08)' }
                         },
                         y: {
-                            ticks: { color: '#94a3b8', precision: 0, font: { size: 11 } },
+                            ticks: { color: '#555555', precision: 0, font: { size: 11 } },
                             grid: { color: 'rgba(148, 163, 184, 0.08)' },
                             beginAtZero: true
                         }
@@ -2191,10 +1080,10 @@
                     datasets: [{
                         label: 'Risk Count',
                         data: categoryValues,
-                        borderColor: '#22d3ee',
+                        borderColor: '#BF9B00',
                         backgroundColor: 'rgba(34, 211, 238, 0.16)',
-                        pointBackgroundColor: '#67e8f9',
-                        pointBorderColor: '#083344'
+                        pointBackgroundColor: '#BF9B00',
+                        pointBorderColor: '#111111'
                     }]
                 },
                 options: {
@@ -2205,8 +1094,8 @@
                         r: {
                             angleLines: { color: 'rgba(148, 163, 184, 0.18)' },
                             grid: { color: 'rgba(148, 163, 184, 0.18)' },
-                            pointLabels: { color: '#cbd5e1', font: { size: 11 } },
-                            ticks: { color: '#94a3b8', backdropColor: 'transparent', precision: 0 }
+                            pointLabels: { color: '#555555', font: { size: 11 } },
+                            ticks: { color: '#555555', backdropColor: 'transparent', precision: 0 }
                         }
                     }
                 }
@@ -2233,12 +1122,12 @@
                     plugins: { legend: { display: false } },
                     scales: {
                         x: {
-                            ticks: { color: '#cbd5e1' },
+                            ticks: { color: '#555555' },
                             grid: { color: 'rgba(148, 163, 184, 0.1)' }
                         },
                         y: {
                             beginAtZero: true,
-                            ticks: { color: '#94a3b8' },
+                            ticks: { color: '#555555' },
                             grid: { color: 'rgba(148, 163, 184, 0.1)' }
                         }
                     }
@@ -2256,13 +1145,13 @@
                     datasets: [{
                         label: 'Products',
                         data: trendValues,
-                        borderColor: '#38bdf8',
+                        borderColor: '#BF9B00',
                         backgroundColor: 'rgba(56, 189, 248, 0.16)',
                         fill: true,
                         tension: 0.35,
                         pointRadius: 3,
-                        pointBackgroundColor: '#7dd3fc',
-                        pointBorderColor: '#0c4a6e'
+                        pointBackgroundColor: '#BF9B00',
+                        pointBorderColor: '#111111'
                     }]
                 },
                 options: {
@@ -2271,12 +1160,12 @@
                     plugins: { legend: { display: false } },
                     scales: {
                         x: {
-                            ticks: { color: '#cbd5e1' },
+                            ticks: { color: '#555555' },
                             grid: { color: 'rgba(148, 163, 184, 0.1)' }
                         },
                         y: {
                             beginAtZero: true,
-                            ticks: { color: '#94a3b8', precision: 0 },
+                            ticks: { color: '#555555', precision: 0 },
                             grid: { color: 'rgba(148, 163, 184, 0.1)' }
                         }
                     }
@@ -2312,6 +1201,7 @@
         document.addEventListener('DOMContentLoaded', async () => {
             updateRole();
             bindMarkAllReadAction();
+            initTopbarDropdowns();
 
             // Default date logic for modal
             document.getElementById('pDate').min = new Date().toISOString().split('T')[0];
@@ -2366,22 +1256,128 @@
         }
 
         // Topbar Notification Toggle
-        function toggleNotifications() {
-            document.getElementById('notifDropdown').classList.toggle('show');
-        }
+        let openTopbarDropdown = null;
+        let topbarDropdownsInitialized = false;
 
-        // Close dropdown when clicking outside
-        window.onclick = function (event) {
-            if (!event.target.closest('.notification')) {
-                const drop = document.getElementById('notifDropdown');
-                if (drop && drop.classList.contains('show')) drop.classList.remove('show');
+        function setTopbarDropdown(next) {
+            const notificationDropdown = document.getElementById('notifDropdown');
+            const userMenuDropdown = document.getElementById('userMenuDropdown');
+            const notificationTrigger = document.querySelector('.notification');
+            const userMenuTrigger = document.querySelector('.user-menu-trigger');
+
+            if (next !== 'notifications') {
+                if (notificationDropdown) {
+                    notificationDropdown.classList.remove('show');
+                    notificationDropdown.hidden = true;
+                    notificationDropdown.setAttribute('aria-hidden', 'true');
+                }
+                if (notificationTrigger) notificationTrigger.setAttribute('aria-expanded', 'false');
             }
 
-            if (!event.target.closest('.user-menu')) {
-                const userMenu = document.getElementById('userMenuDropdown');
-                if (userMenu && userMenu.classList.contains('show')) userMenu.classList.remove('show');
+            if (next !== 'user') {
+                if (userMenuDropdown) {
+                    userMenuDropdown.classList.remove('show');
+                    userMenuDropdown.hidden = true;
+                    userMenuDropdown.setAttribute('aria-hidden', 'true');
+                }
+                if (userMenuTrigger) userMenuTrigger.setAttribute('aria-expanded', 'false');
+            }
+
+            if (next === 'notifications' && notificationDropdown) {
+                notificationDropdown.classList.add('show');
+                notificationDropdown.hidden = false;
+                notificationDropdown.setAttribute('aria-hidden', 'false');
+                if (notificationTrigger) notificationTrigger.setAttribute('aria-expanded', 'true');
+            }
+
+            if (next === 'user' && userMenuDropdown) {
+                userMenuDropdown.classList.add('show');
+                userMenuDropdown.hidden = false;
+                userMenuDropdown.setAttribute('aria-hidden', 'false');
+                if (userMenuTrigger) userMenuTrigger.setAttribute('aria-expanded', 'true');
+            }
+
+            openTopbarDropdown = next;
+        }
+
+        function toggleNotifications(event) {
+            if (event && typeof event.preventDefault === 'function') event.preventDefault();
+            setTopbarDropdown(openTopbarDropdown === 'notifications' ? null : 'notifications');
+        }
+
+        function toggleUserMenu(event) {
+            if (event && typeof event.preventDefault === 'function') event.preventDefault();
+            setTopbarDropdown(openTopbarDropdown === 'user' ? null : 'user');
+        }
+
+        function closeTopbarDropdowns() {
+            setTopbarDropdown(null);
+        }
+
+        function handleTopbarTriggerKeydown(event, dropdownName) {
+            if (event.key !== 'Enter' && event.key !== ' ' && event.key !== 'Spacebar') return;
+            event.preventDefault();
+            if (dropdownName === 'notifications') {
+                toggleNotifications(event);
+            } else {
+                toggleUserMenu(event);
             }
         }
+
+        function handleTopbarDocumentClick(event) {
+            if (!openTopbarDropdown) return;
+
+            const containerSelector = openTopbarDropdown === 'notifications' ? '.notification' : '.user-menu';
+            const target = event.target;
+            if (target && typeof target.closest === 'function' && target.closest(containerSelector)) {
+                return;
+            }
+
+            setTopbarDropdown(null);
+        }
+
+        function initTopbarDropdowns() {
+            if (topbarDropdownsInitialized) return;
+            topbarDropdownsInitialized = true;
+
+            const notificationTrigger = document.querySelector('.notification');
+            const userMenuTrigger = document.querySelector('.user-menu-trigger');
+
+            if (notificationTrigger) {
+                notificationTrigger.setAttribute('role', 'button');
+                notificationTrigger.setAttribute('tabindex', '0');
+                notificationTrigger.setAttribute('aria-haspopup', 'menu');
+                notificationTrigger.setAttribute('aria-controls', 'notifDropdown');
+                notificationTrigger.addEventListener('keydown', (event) =>
+                    handleTopbarTriggerKeydown(event, 'notifications'));
+            }
+
+            if (userMenuTrigger) {
+                userMenuTrigger.setAttribute('aria-haspopup', 'menu');
+                userMenuTrigger.setAttribute('aria-controls', 'userMenuDropdown');
+                userMenuTrigger.addEventListener('keydown', (event) =>
+                    handleTopbarTriggerKeydown(event, 'user'));
+            }
+
+            document.addEventListener('click', handleTopbarDocumentClick, true);
+            document.addEventListener('keydown', (event) => {
+                if ((event.key === 'Escape' || event.key === 'Esc') && openTopbarDropdown) {
+                    const previous = openTopbarDropdown;
+                    setTopbarDropdown(null);
+                    if (previous === 'notifications' && notificationTrigger) {
+                        notificationTrigger.focus();
+                    }
+                    if (previous === 'user' && userMenuTrigger) {
+                        userMenuTrigger.focus();
+                    }
+                }
+            });
+
+            setTopbarDropdown(null);
+        }
+
+        // Preserve the old global onclick contract while ownership moves to listeners above.
+        window.onclick = null;
 
         // Role & Auth Simulation
         function updateRole() {
@@ -2539,7 +1535,7 @@
                 const isExpiry = region?.is_expiry ?? false;
 
                 // ✨ HIGHLIGHT EXPIRY REGIONS (Task 1) ✨
-                ctx.strokeStyle = isExpiry ? '#22c55e' : '#22d3ee';
+                ctx.strokeStyle = isExpiry ? '#22c55e' : '#BF9B00';
                 ctx.lineWidth = isExpiry ? 3 : 1;
                 ctx.fillStyle = isExpiry ? 'rgba(34, 197, 94, 0.2)' : 'rgba(34, 211, 238, 0.16)';
 
@@ -2576,15 +1572,30 @@
             const file = input?.files?.[0];
             if (!file) return;
 
-            if (!file.type.startsWith('image/')) {
-                setStatus('Please select an image file for scan preview.', 'error');
-                input.value = '';
-                return;
-            }
-
+            const startButton = document.getElementById('startScanBtn');
             const previewContainer = document.getElementById('scanPreviewContainer');
             const previewImage = document.getElementById('scanPreviewImage');
             const meta = document.getElementById('scanPreviewMeta');
+
+            if (!file.type.startsWith('image/')) {
+                setStatus('Please select an image file for scan preview.', 'error');
+                if (startButton) {
+                    startButton.disabled = true;
+                    startButton.style.display = 'none';
+                }
+                if (input) input.value = '';
+                return;
+            }
+
+            if (file.size > 10 * 1024 * 1024) {
+                setStatus('Image exceeds the maximum size of 10 MB.', 'error');
+                if (startButton) {
+                    startButton.disabled = true;
+                    startButton.style.display = 'none';
+                }
+                if (input) input.value = '';
+                return;
+            }
 
             if (!previewContainer || !previewImage || !meta) return;
 
@@ -2596,17 +1607,52 @@
             previewImage.src = lastScanPreviewObjectUrl;
             previewContainer.style.display = 'block';
             clearScanOverlay();
-            meta.innerText = 'Uploading and scanning...';
-            const preConfirmBox = document.getElementById('confirmBox');
-            if (preConfirmBox) {
-                preConfirmBox.style.display = 'none';
+
+            pendingScanFile = file;
+            const sizeText = file.size > 1024 * 1024
+                ? `${(file.size / (1024 * 1024)).toFixed(1)} MB`
+                : `${Math.max(1, Math.round(file.size / 1024))} KB`;
+            meta.innerText = `${file.name} (${sizeText}) - Click Start Analysis`;
+
+            if (startButton) {
+                startButton.disabled = false;
+                startButton.style.display = 'inline-flex';
+                startButton.textContent = 'Start Analysis';
             }
+
+            const confirmBox = document.getElementById('confirmBox');
+            if (confirmBox) confirmBox.style.display = 'none';
+
+            setStatus('Image selected. Click Start Analysis when ready.', 'info');
+        }
+
+        async function startScanAnalysis() {
+            const input = document.getElementById('scanUploadInput');
+            const file = pendingScanFile || input?.files?.[0];
+            const startButton = document.getElementById('startScanBtn');
+            const previewContainer = document.getElementById('scanPreviewContainer');
+            const previewImage = document.getElementById('scanPreviewImage');
+            const meta = document.getElementById('scanPreviewMeta');
+
+            if (!file) {
+                setStatus('Choose a product image before starting analysis.', 'error');
+                return;
+            }
+            if (scanInProgress) return;
+
+            scanInProgress = true;
+            if (startButton) {
+                startButton.disabled = true;
+                startButton.textContent = 'Analyzing...';
+            }
+            if (meta) meta.innerText = 'Analyzing...';
+            setStatus('Analyzing image...', 'info');
 
             const formData = new FormData();
             formData.append('file', file);
 
             try {
-                const payload = await apiRequest(`${SCAN_API_BASE}/image`, {
+                const payload = await apiRequest('/api/v1/scan/image', {
                     method: 'POST',
                     body: formData
                 });
@@ -2617,23 +1663,21 @@
                 const regions = Array.isArray(result?.ocr_regions) ? result.ocr_regions : [];
 
                 const drawWhenReady = () => drawScanRegions(regions);
-                if (previewImage.complete) drawWhenReady();
-                else previewImage.onload = drawWhenReady;
+                if (previewImage && previewImage.complete) drawWhenReady();
+                else if (previewImage) previewImage.onload = drawWhenReady;
 
-                meta.innerText = `Scan complete: ${regions.length} region(s) detected`;
+                if (meta) meta.innerText = `Scan complete: ${regions.length} region(s) detected`;
 
                 const confirmBox = document.getElementById('confirmBox');
                 const warning = document.getElementById('confidenceWarning');
                 const expiry = result?.expiry_date || result?.expiry?.suggested?.normalized;
 
                 if (expiry) {
-                    if (confirmBox) {
-                        confirmBox.style.display = 'block';
-                    }
+                    if (confirmBox) confirmBox.style.display = 'block';
 
                     if (warning) {
                         warning.innerText = result?.needs_manual_input
-                            ? '⚠ Low confidence. Please verify expiry date.'
+                            ? 'Low confidence. Please verify the expiry date in the details below.'
                             : '';
                     }
 
@@ -2643,47 +1687,52 @@
                     };
 
                     const confirmExpiryDate = document.getElementById('confirmExpiryDate');
-                    if (confirmExpiryDate) {
-                        confirmExpiryDate.innerText = expiry;
-                    }
+                    if (confirmExpiryDate) confirmExpiryDate.innerText = expiry;
 
                     const productName = document.getElementById('productName');
-                    if (productName) {
+                    if (productName && !productName.value) {
                         productName.value = '';
                     }
 
                     const productQty = document.getElementById('productQty');
-                    if (productQty) {
-                        productQty.value = 1;
-                    }
+                    if (productQty) productQty.value = 1;
                 } else {
                     window.lastScanResult = null;
-                    if (confirmBox) {
-                        confirmBox.style.display = 'none';
-                    }
-                    if (warning) {
-                        warning.innerText = '';
-                    }
+                    if (confirmBox) confirmBox.style.display = 'none';
+                    if (warning) warning.innerText = '';
+
+                    setStatus('Scan complete, but no expiry date was detected. You can retry or enter the details manually.', 'info', true);
                 }
+
+                const statusMessage = result?.message || (expiry ? 'Expiry detected' : 'Expiry date not detected');
+                setStatus(statusMessage, expiry ? 'success' : 'info', true);
             } catch (error) {
                 clearScanOverlay();
-                meta.innerText = 'Scan failed';
-                setStatus(error.message || 'Scan preview failed.', 'error');
+                if (meta) meta.innerText = 'Scan failed';
+                const message = error?.message || 'Scan failed.';
+                setStatus(message, 'error');
+
                 window.lastScanResult = null;
                 const confirmBox = document.getElementById('confirmBox');
                 const warning = document.getElementById('confidenceWarning');
-                if (confirmBox) {
-                    confirmBox.style.display = 'none';
-                }
-                if (warning) {
-                    warning.innerText = '';
+                if (confirmBox) confirmBox.style.display = 'none';
+                if (warning) warning.innerText = '';
+
+                if (startButton) {
+                    startButton.textContent = 'Try Again';
+                    startButton.disabled = false;
                 }
             } finally {
-                input.value = '';
+                scanInProgress = false;
+                if (startButton && startButton.textContent !== 'Try Again') {
+                    startButton.disabled = false;
+                    startButton.textContent = 'Start Analysis';
+                }
+                if (input) input.value = '';
             }
         }
 
-        function triggerCsvUpload() {
+function triggerCsvUpload() {
             const input = document.getElementById('csvUploadInput');
             if (!input) return;
             input.value = '';

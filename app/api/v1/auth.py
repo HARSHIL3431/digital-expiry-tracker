@@ -1,5 +1,5 @@
 import secrets
-from urllib.parse import quote, urlparse
+from urllib.parse import urlparse
 
 from fastapi import APIRouter, Depends, HTTPException, Request
 from fastapi.responses import RedirectResponse
@@ -151,10 +151,8 @@ async def google_callback(request: Request, db: Session = Depends(get_db)):
 
     try:
         token = await google.authorize_access_token(request)
-        print("TOKEN:", token)
     except OAuthError as e:
-        print("OAuth error:", str(e))
-        raise HTTPException(status_code=400, detail="Google authorization failed")
+        raise HTTPException(status_code=400, detail="Google authorization failed") from e
 
     user_info = token.get("userinfo")
     if not user_info:
@@ -202,8 +200,22 @@ async def google_callback(request: Request, db: Session = Depends(get_db)):
     )
     db.commit()
 
-    token_safe = quote(token, safe="")
-    return RedirectResponse(url=f"/app/dashboard?token={token_safe}")
+    # Avoid placing JWTs in redirect URLs; exchange this one-time session value
+    # through an authenticated same-origin request instead.
+    request.session["oauth_access_token"] = token
+    return RedirectResponse(url="/app/dashboard")
+
+
+# ==============================
+# 🔐 OAUTH SESSION TOKEN EXCHANGE
+# ==============================
+
+@router.get("/session-token", response_model=LoginResponse)
+def exchange_oauth_session_token(request: Request):
+    token = request.session.pop("oauth_access_token", None)
+    if not token:
+        raise HTTPException(status_code=401, detail="No pending OAuth session token")
+    return {"access_token": token, "token_type": "bearer"}
 
 
 # ==============================

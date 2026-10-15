@@ -5,14 +5,53 @@ from fastapi.responses import FileResponse
 from starlette.middleware.sessions import SessionMiddleware
 
 from app.utils.database import init_db, SessionLocal
-from app import models  # ensures models are registered
-from app.core.config import SECRET_KEY
+from app import models  # noqa: F401  # ensures models are registered
+from app.core.config import DEMO_USER_PASSWORD, ENABLE_DEMO_USER, SECRET_KEY, SESSION_COOKIE_SECURE
 from app.api.v1 import products, scan
 from app.api.v1 import auth
 from app.api.v1 import logs
 from app.api.v1 import analytics
 from app.api.v1 import admin
 from app.services.expiry_alert_service import start_expiry_alert_scheduler, stop_expiry_alert_scheduler
+
+
+# ------------------ OPTIONAL DEMO USER ------------------
+
+def ensure_demo_user(db):
+    if not ENABLE_DEMO_USER:
+        return False
+    if not DEMO_USER_PASSWORD:
+        print("Demo user skipped: DEMO_USER_PASSWORD is not configured.")
+        return False
+
+    from app.core.security import hash_password
+    from app.models import Subscription, User
+    from datetime import date, timedelta
+
+    test_email = "test@example.com"
+    user = db.query(User).filter(User.email == test_email).first()
+    if user:
+        return False
+
+    user = User(
+        name="Test User",
+        email=test_email,
+        password_hash=hash_password(DEMO_USER_PASSWORD),
+    )
+    db.add(user)
+    db.commit()
+    db.refresh(user)
+
+    subscription = Subscription(
+        user_id=user.id,
+        plan_type="free",
+        expiry_date=date.today() + timedelta(days=365),
+    )
+    db.add(subscription)
+    db.commit()
+
+    print("Demo user ensured: test@example.com")
+    return True
 
 
 # ------------------ LIFESPAN ------------------
@@ -29,35 +68,10 @@ async def lifespan(app: FastAPI):
     start_expiry_alert_scheduler()
     print("Expiry alert scheduler initialized.")
 
-    # --- DEMO TEST USER SETUP ---
-    from app.models import User, Subscription
-    from app.core.security import hash_password
-    from datetime import date, timedelta
+    # --- OPTIONAL DEMO USER SETUP ---
     db = SessionLocal()
     try:
-        test_email = "test@example.com"
-        test_password = "123456"
-        user = db.query(User).filter(User.email == test_email).first()
-        if not user:
-            user = User(
-                name="Test User",
-                email=test_email,
-                password_hash=hash_password(test_password)
-            )
-            db.add(user)
-            db.commit()
-            db.refresh(user)
-            # Add subscription
-            sub = Subscription(
-                user_id=user.id,
-                plan_type="free",
-                expiry_date=date.today() + timedelta(days=365)
-            )
-            db.add(sub)
-            db.commit()
-            print("Test user created: test@example.com / 123456")
-        else:
-            print("Test user already exists.")
+        ensure_demo_user(db)
     finally:
         db.close()
 
@@ -81,7 +95,8 @@ app.add_middleware(
     SessionMiddleware,
     secret_key=SECRET_KEY,
     same_site="lax",
-    https_only=False,
+    https_only=SESSION_COOKIE_SECURE,
+    max_age=300,
 )
 
 
@@ -94,6 +109,16 @@ app.mount("/assets", StaticFiles(directory="frontend/assets"), name="assets")
 # ------------------ FRONTEND PAGES ------------------
 
 # Landing Page
+@app.get("/health", tags=["Health"])
+def health_check():
+    return {"status": "ok", "service": "digital-expiry-tracker"}
+
+
+@app.get("/api/health", tags=["Health"])
+def api_health_check():
+    return {"status": "ok", "service": "digital-expiry-tracker"}
+
+
 @app.get("/", tags=["Frontend"])
 def landing_page():
     return FileResponse("frontend/pages/v1.html")
