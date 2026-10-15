@@ -1,0 +1,24 @@
+{
+  "$schema": "https://openapi.vercel.com/1/vercel.json",
+  "cleanUrls": true,
+  "trailingSlash": false,
+  "outputDirectory": "frontend",
+  "rewrites": [
+    {
+      "source": "/",
+      "destination": "/pages/v1.html"
+    },
+    {
+      "source": "/app/:page",
+      "destination": "/pages/:page.html"
+    },
+    {
+      "source": "/api/:path*",
+      "destination": "https://YOUR_RENDER_SERVICE.onrender.com/api/:path*"
+    },
+    {
+      "source": "/health",
+      "destination": "https://YOUR_RENDER_SERVICE.onrender.com/health"
+    }
+  ]
+}

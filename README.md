@@ -201,7 +201,76 @@ error when the engine is unavailable.
    configured by the environment. Missing or corrupt OCR engines never return a
    successful OCR result.
 
+## Deployment (Vercel Frontend + Render Backend)
+
+This repository is prepared for a split deployment:
+
+- Vercel serves the content under `frontend/` only.
+- Render runs FastAPI from the repository root as a Python web service.
+- Vercel rewrites (`vercel.json`) proxy `/api/*` and `/health` to the Render URL.
+
+### Required environment variables
+
+Configure these on Render and/or Vercel. Do not commit real values.
+
+- `APP_ENV=production`
+- `ENVIRONMENT=production`
+- `SECRET_KEY`
+- `ADMIN_EMAIL`
+- `JWT_ALGORITHM`
+- `ACCESS_TOKEN_EXPIRE_MINUTES`
+- `DATABASE_URL` (use a durable location or external database)
+- `CORS_ALLOWED_ORIGINS` (comma-separated exact origins, e.g. `https://your-app.vercel.app`)
+- `FRONTEND_URL` (optional; can feed the comma-separated allowlist)
+- `VERCEL_FRONTEND_URL` (optional alias for an allowlisted Vercel origin)
+- `SESSION_COOKIE_SECURE=true`
+- `ENABLE_DEMO_USER=false`
+- `ENABLE_OCR=true` or `false`
+- `TESSERACT_CMD=` (absolute path if Tesseract is not on `PATH`)
+- `OCR_TIMEOUT_SECONDS=30`
+- `MAX_UPLOAD_SIZE_BYTES=10485760`
+- `UPLOAD_DIR=/var/data/uploads` on a persistent Render disk
+- `GOOGLE_CLIENT_ID`
+- `GOOGLE_CLIENT_SECRET`
+- `GOOGLE_REDIRECT_URI`
+- `TELEGRAM_BOT_TOKEN` only if Telegram notifications are used
+
+### Vercel steps
+
+1. Import the repository in Vercel.
+2. Keep the root directory as the project root; `vercel.json` sets `outputDirectory` to `frontend`.
+3. Set framework preset to Other / static if Vercel asks.
+4. Replace `https://YOUR_RENDER_SERVICE.onrender.com` in `vercel.json` with the real Render service URL, or configure the same rewrite manually in Vercel.
+5. Configure any Vercel build settings as needed; no frontend build command is required.
+6. Redeploy Vercel after the Render service URL is finalized.
+
+### Render steps
+
+1. Create a Python web service from the repository.
+2. Build command: `pip install -r requirements.txt`; add `pip install -r requirements-ocr.txt` if OCR and Tesseract are required.
+3. Start command:
+
+   ```text
+   mkdir -p /var/data/uploads && uvicorn app.main:app --host 0.0.0.0 --port $PORT
+   ```
+
+4. Set `healthCheckPath` to `/health`.
+5. Use a persistent disk at `/var/data` for SQLite and uploads, or switch `DATABASE_URL` to an external database after approving that migration.
+6. Install Tesseract in the Render build environment if OCR is enabled.
+7. Set all required environment variables; use a strong auto-generated `SECRET_KEY`.
+8. Update `GOOGLE_REDIRECT_URI` to the final callback route, such as `https://your-app.vercel.app/api/v1/auth/google/callback`.
+
+### Data persistence
+
+SQLite is already configurable through `DATABASE_URL`. For a private or free Render service, writing SQLite to the local container is not durable, and Render upgrades/redeploys can lose data and uploaded files. Two safe options are:
+
+- Attach a paid Render persistent disk and use `sqlite:////var/data/expiry_tracker.db` with `UPLOAD_DIR=/var/data/uploads`.
+- Later migrate to an external managed database. Do not run that migration in this code without approval; the current engine, models, user data, authentication, sessions, and upload routes are intended to remain unchanged.
+
+OCR is also optional. The backend checks OCR/engine availability and returns a safe `503` error if Tesseract or another required dependency is unavailable; it will not silently disable a successful scan.
+
 ## Notes
 
 - OCR endpoints require OCR-related dependencies (OpenCV, Tesseract, EasyOCR) to be installed.
 - For production, set a strong `SECRET_KEY`, secure token storage, and proper DB engine settings.
+- Run `python -m compileall -q .` and `pytest` after changing deployment configuration code.
