@@ -1,0 +1,110 @@
+name: CI
+
+on:
+  push:
+    branches: [main, develop, feature/**]
+  pull_request:
+    branches: [main, develop]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    name: "Python ${{ matrix.python-version }} · Tests & Lint"
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.11", "3.12", "3.13"]
+
+    steps:
+      # ---------------------------------------------------------------
+      # 1. Checkout
+      # ---------------------------------------------------------------
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # ---------------------------------------------------------------
+      # 2. Python setup
+      # ---------------------------------------------------------------
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: pip
+          cache-dependency-path: |
+            requirements.txt
+            requirements-dev.txt
+
+      # ---------------------------------------------------------------
+      # 3. Install dependencies
+      # ---------------------------------------------------------------
+      - name: Install core dependencies
+        run: pip install -r requirements.txt
+
+      - name: Install dev/test dependencies
+        run: pip install -r requirements-dev.txt
+
+      # ---------------------------------------------------------------
+      # 4. Syntax check — fail fast on any import/syntax error
+      # ---------------------------------------------------------------
+      - name: Syntax check (compileall)
+        run: python -m compileall -q app tests
+
+      # ---------------------------------------------------------------
+      # 5. Lint (ruff)
+      # ---------------------------------------------------------------
+      - name: Lint with ruff
+        run: python -m ruff check .
+        continue-on-error: false
+
+      # ---------------------------------------------------------------
+      # 6. Test suite
+      #
+      #    - DATABASE_URL points to a temporary SQLite file (no side-effects)
+      #    - SECRET_KEY is a test-only dummy value (never used in production)
+      #    - Scheduler disabled so APScheduler threads don't interfere
+      #    - Google OAuth is not configured (endpoints return 500 as expected)
+      #    - OCR system packages (tesseract, opencv) are NOT installed;
+      #      OCRService._require_ocr_deps() raises a RuntimeError rather than
+      #      crashing, so tests that mock OCR or hit non-OCR endpoints pass.
+      # ---------------------------------------------------------------
+      - name: Run test suite
+        env:
+          DATABASE_URL: "sqlite:///./ci_test.db"
+          SECRET_KEY: "ci-test-secret-key-not-for-production"
+          JWT_ALGORITHM: "HS256"
+          ACCESS_TOKEN_EXPIRE_MINUTES: "60"
+          ADMIN_EMAIL: "admin@det.com"
+          ENABLE_EXPIRY_ALERT_SCHEDULER: "false"
+          GOOGLE_CLIENT_ID: ""
+          GOOGLE_CLIENT_SECRET: ""
+          EMAIL_USER: ""
+          EMAIL_PASSWORD: ""
+        run: |
+          python -m pytest tests/ \
+            --tb=short \
+            --strict-markers \
+            -v \
+            --junitxml=test-results.xml
+
+      # ---------------------------------------------------------------
+      # 7. Upload test results artifact (always, even on failure)
+      # ---------------------------------------------------------------
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results-py${{ matrix.python-version }}
+          path: test-results.xml
+          retention-days: 7
+
+      # ---------------------------------------------------------------
+      # 8. Clean up CI SQLite file
+      # ---------------------------------------------------------------
+      - name: Remove CI test database
+        if: always()
+        run: rm -f ci_test.db

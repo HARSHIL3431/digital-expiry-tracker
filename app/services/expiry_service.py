@@ -1,5 +1,5 @@
 from datetime import date
-from typing import List, Dict, Any, Optional
+from typing import List, Dict, Any
 
 
 # ---------------- LEGACY (KEEP THIS) ---------------- #

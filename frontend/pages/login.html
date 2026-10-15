@@ -1,92 +1,101 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login | Digital Expiry Tracker</title>
-
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="/assets/css/style.css">
 </head>
-
 <body>
     <div class="ambient-bg"></div>
-
     <nav>
         <a href="/" class="logo">
-            <div class="logo-icon"></div>
+            <span class="logo-mark"></span>
             ExpiryTracker
         </a>
-
         <div class="nav-links">
-            <a href="/#features">Platform</a>
+            <a href="/#features">Features</a>
         </div>
         <div class="nav-actions">
-            <a href="/app/register" class="btn btn-secondary" style="border: none; background: transparent;">Register</a>
+            <a href="/app/register" class="btn btn-ghost">Register</a>
         </div>
     </nav>
 
-    <div class="auth-container reveal">
-        <div class="auth-card">
+    <div class="container auth-shell">
+        <section class="auth-visual">
+            <div>
+                <div class="eyebrow">Secure sign in</div>
+                <h2>Your expiry inventory, under control.</h2>
+                <p>Scan products, monitor food and medicine, and receive the status calculations that matter.</p>
+            </div>
+            <ul>
+                <li>Real API authentication with JWT session handling</li>
+                <li>Google OAuth with safe token exchange</li>
+                <li>Secure scan storage scoped to your account</li>
+            </ul>
+        </section>
 
+        <section class="auth-card">
             <div class="auth-header">
                 <h1>Welcome back</h1>
                 <p>Log in to your ExpiryTracker account</p>
             </div>
 
-            <div id="loginError" class="auth-error" style="display:none;"></div>
+            <div id="loginError" class="auth-error" role="alert" style="display:none;"></div>
 
             <form id="loginForm">
-
                 <div class="form-group">
-                    <label>Email Address</label>
-                    <input type="email" id="email" class="form-control"
-                        placeholder="name@company.com" required>
+                    <label class="form-label" for="email">Email address</label>
+                    <input type="email" id="email" class="form-control" placeholder="name@company.com" autocomplete="email" required>
                 </div>
 
                 <div class="form-group">
-                    <label>Password</label>
-                    <input type="password" id="password" class="form-control"
-                        placeholder="••••••••" required>
+                    <label class="form-label" for="password">Password</label>
+                    <div class="input-wrap">
+                        <input type="password" id="password" class="form-control" placeholder="••••••••" autocomplete="current-password" required>
+                        <button type="button" class="password-toggle" id="passwordToggle">Show</button>
+                    </div>
                 </div>
 
-                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.5rem; font-size:0.85rem;">
-                    <label style="display:flex; align-items:center; gap:8px; cursor:pointer; color:var(--text-muted); margin:0;">
+                <div style="display:flex; justify-content:space-between; align-items:center; gap:1rem; margin-bottom:1.5rem; font-size:.85rem;">
+                    <label style="display:flex; align-items:center; gap:8px; color:var(--text-muted); cursor:pointer; margin:0;">
                         <input type="checkbox" style="accent-color: var(--accent);">
                         Remember me
                     </label>
-
-                    <a href="#" style="color: var(--accent); text-decoration:none;">Forgot password?</a>
+                    <a href="#" style="font-weight:700;">Forgot password?</a>
                 </div>
-
-                                <div class="google-login-container">
-                                    <button type="button" class="google-btn" onclick="loginWithGoogle()">
-                                        <img src="https://developers.google.com/identity/images/g-logo.png" />
-                                        <span>Continue with Google</span>
-                                    </button>
-                                </div>
-
-                                <div class="auth-divider">
-                                    <span>OR</span>
-                                </div>
 
                 <button type="submit" id="loginSubmitBtn" class="btn btn-primary auth-btn">
                     Log in →
                 </button>
 
+                <div class="auth-divider">OR</div>
+
+                <div class="google-login-container">
+                    <button type="button" class="google-btn" onclick="loginWithGoogle()">
+                        <img src="https://developers.google.com/identity/images/g-logo.png" alt="Google">
+                        <span>Continue with Google</span>
+                    </button>
+                </div>
             </form>
 
             <div class="auth-footer">
-                Don't have an account?
+                Don’t have an account?
                 <a href="/app/register">Sign up</a>
             </div>
-
-        </div>
+        </section>
     </div>
 
-
-<script src="/assets/js/auth.js"></script>
-
+    <script src="/assets/js/auth.js"></script>
+    <script>
+        document.getElementById('passwordToggle')?.addEventListener('click', () => {
+            const field = document.getElementById('password');
+            const button = document.getElementById('passwordToggle');
+            const visible = field.type === 'text';
+            field.type = visible ? 'password' : 'text';
+            button.textContent = visible ? 'Show' : 'Hide';
+        });
+    </script>
 </body>
 </html>

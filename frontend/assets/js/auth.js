@@ -18,10 +18,36 @@ function persistTokenFromUrlIfPresent() {
         return false;
     }
 
+    // Legacy OAuth redirect support; new flows use a same-origin session exchange.
     localStorage.setItem('auth_token', token);
     url.searchParams.delete('token');
     window.history.replaceState({}, document.title, url.pathname + (url.search ? `?${url.searchParams.toString()}` : ''));
     return true;
+}
+
+async function hydrateTokenFromOAuthSession() {
+    if (localStorage.getItem('auth_token')) {
+        return false;
+    }
+
+    try {
+        const response = await fetch('/api/v1/auth/session-token', {
+            method: 'GET',
+            headers: { 'Accept': 'application/json' },
+        });
+        if (!response.ok) {
+            return false;
+        }
+        const data = await response.json();
+        if (data.access_token) {
+            localStorage.setItem('auth_token', data.access_token);
+            return true;
+        }
+    } catch (error) {
+        // OAuth session may not be present on non-dashboard pages.
+    }
+
+    return false;
 }
 
 function loginWithGoogle() {
@@ -163,6 +189,10 @@ document.addEventListener('DOMContentLoaded', () => {
     if (hadTokenInUrl && window.location.pathname !== '/app/dashboard') {
         window.location.href = '/app/dashboard';
         return;
+    }
+
+    if (window.location.pathname === '/app/dashboard') {
+        hydrateTokenFromOAuthSession();
     }
 
     const loginForm = document.getElementById('loginForm');

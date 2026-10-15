@@ -1,6 +1,6 @@
 from sqlalchemy import Column, Integer, String, Date, DateTime, ForeignKey, Float, Boolean
 from sqlalchemy.orm import relationship
-from datetime import datetime
+from datetime import datetime, timezone
 from app.utils.database import Base
 
 
@@ -10,11 +10,14 @@ class ScanResult(Base):
     __tablename__ = "scan_results"
 
     id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=True, index=True)
     image_path = Column(String)
     extracted_text = Column(String)
     detected_expiry = Column(String)
     confidence = Column(String)
-    created_at = Column(DateTime, default=datetime.utcnow)
+    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+
+    owner = relationship("User")
 
 
 # ------------------ USER ------------------
@@ -26,7 +29,7 @@ class User(Base):
     name = Column(String, nullable=False)
     email = Column(String, unique=True, index=True)
     password_hash = Column(String, nullable=False)
-    created_at = Column(DateTime, default=datetime.utcnow)
+    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
 
     products = relationship("Product", back_populates="owner")
     subscription = relationship("Subscription", back_populates="user", uselist=False)
@@ -47,7 +50,7 @@ class Product(Base):
     price = Column(Float, nullable=False)
     alert_sent = Column(Boolean, nullable=False, default=False)
 
-    created_at = Column(DateTime, default=datetime.utcnow)
+    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
 
     user_id = Column(Integer, ForeignKey("users.id"))
 
@@ -92,4 +95,4 @@ class ActivityLog(Base):
     user_id = Column(Integer, ForeignKey("users.id"), nullable=False, index=True)
     action = Column(String, nullable=False)
     description = Column(String, nullable=False)
-    timestamp = Column(DateTime, default=datetime.utcnow, nullable=False, index=True)
+    timestamp = Column(DateTime, default=lambda: datetime.now(timezone.utc), nullable=False, index=True)
