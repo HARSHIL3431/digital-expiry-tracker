@@ -39,9 +39,17 @@ digital-expiry-tracker/
 
 ## Demo Credentials
 
-A demo user is auto-created at app startup:
+A demo user is created at app startup only when explicitly enabled:
+
 - Email: `test@example.com`
-- Password: `123456`
+- Password: value of `DEMO_USER_PASSWORD` in `.env`
+- Enable flag: `ENABLE_DEMO_USER=true` (forced off when `APP_ENV=production`
+  unless explicitly enabled, and creation is skipped when
+  `DEMO_USER_PASSWORD` is empty)
+
+Do not use the demo account in production. If a real credential was ever
+committed to Git history, rotate it with its issuing service; removing it
+from the latest commit alone does not revoke exposure.
 
 ## Setup (Windows)
 
@@ -88,6 +96,8 @@ JWT_ALGORITHM=HS256
 ACCESS_TOKEN_EXPIRE_MINUTES=60
 ADMIN_EMAIL=admin@det.com
 DATABASE_URL=sqlite:///./expiry_tracker.db
+ENABLE_DEMO_USER=true
+DEMO_USER_PASSWORD=change-me-local-only
 TESSERACT_CMD=C:\Program Files\Tesseract-OCR\tesseract.exe
 OCR_TIMEOUT_SECONDS=30
 GOOGLE_CLIENT_ID=your_client_id

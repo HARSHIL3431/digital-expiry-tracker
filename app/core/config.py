@@ -1,4 +1,5 @@
 import os
+import secrets
 from pathlib import Path
 from dotenv import load_dotenv
 
@@ -10,8 +11,13 @@ _raw_secret_key = os.getenv("SECRET_KEY")
 if not _raw_secret_key:
     if _environment in {"production", "prod"}:
         raise RuntimeError("SECRET_KEY must be configured in production")
-    _raw_secret_key = "dev-insecure-secret-change-me"
+    # Ephemeral development-only secret: never hardcoded, never valid across
+    # restarts, never suitable for production. Set SECRET_KEY in .env for
+    # stable local sessions.
+    _raw_secret_key = secrets.token_urlsafe(32)
+    print("[config] WARNING: SECRET_KEY not set; using ephemeral dev secret.")
 SECRET_KEY = _raw_secret_key
+DEMO_USER_PASSWORD = os.getenv("DEMO_USER_PASSWORD", "")
 
 _raw_demo_user = os.getenv("ENABLE_DEMO_USER")
 if _raw_demo_user is None:

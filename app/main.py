@@ -6,7 +6,7 @@ from starlette.middleware.sessions import SessionMiddleware
 
 from app.utils.database import init_db, SessionLocal
 from app import models  # noqa: F401  # ensures models are registered
-from app.core.config import ENABLE_DEMO_USER, SECRET_KEY, SESSION_COOKIE_SECURE
+from app.core.config import DEMO_USER_PASSWORD, ENABLE_DEMO_USER, SECRET_KEY, SESSION_COOKIE_SECURE
 from app.api.v1 import products, scan
 from app.api.v1 import auth
 from app.api.v1 import logs
@@ -19,6 +19,9 @@ from app.services.expiry_alert_service import start_expiry_alert_scheduler, stop
 
 def ensure_demo_user(db):
     if not ENABLE_DEMO_USER:
+        return False
+    if not DEMO_USER_PASSWORD:
+        print("Demo user skipped: DEMO_USER_PASSWORD is not configured.")
         return False
 
     from app.core.security import hash_password
@@ -33,7 +36,7 @@ def ensure_demo_user(db):
     user = User(
         name="Test User",
         email=test_email,
-        password_hash=hash_password("123456"),
+        password_hash=hash_password(DEMO_USER_PASSWORD),
     )
     db.add(user)
     db.commit()

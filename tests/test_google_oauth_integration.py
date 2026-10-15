@@ -114,21 +114,29 @@ def test_google_oauth_invalid_state_returns_error(monkeypatch):
         assert response.status_code == 400
 
 
-def test_existing_email_password_login_still_works():
-    with TestClient(app) as client:
-        response = client.post(
-            "/api/v1/auth/login",
-            json={"email": "test@example.com", "password": "123456"},
-        )
-        assert response.status_code == 200
+def test_existing_email_password_login_still_works(client):
+    from uuid import uuid4 as _uuid4
 
-        body = response.json()
-        assert "access_token" in body
-        assert body.get("token_type") == "bearer"
+    email = f"login-{_uuid4().hex[:8]}@example.com"
+    password = "TestPass123!"
+    reg = client.post(
+        "/api/v1/auth/register",
+        json={"name": "Login User", "email": email, "password": password},
+    )
+    assert reg.status_code == 200, reg.text
+    response = client.post(
+        "/api/v1/auth/login",
+        json={"email": email, "password": password},
+    )
+    assert response.status_code == 200
 
-        me_response = client.get(
-            "/api/v1/auth/me",
-            headers={"Authorization": f"Bearer {body['access_token']}"},
-        )
-        assert me_response.status_code == 200
-        assert me_response.json()["email"] == "test@example.com"
+    body = response.json()
+    assert "access_token" in body
+    assert body.get("token_type") == "bearer"
+
+    me_response = client.get(
+        "/api/v1/auth/me",
+        headers={"Authorization": f"Bearer {body['access_token']}"},
+    )
+    assert me_response.status_code == 200
+    assert me_response.json()["email"] == email
