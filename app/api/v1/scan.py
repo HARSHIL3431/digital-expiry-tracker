@@ -15,7 +15,6 @@ router = APIRouter(tags=["Scan"])
 scan_service = ScanService()
 
 UPLOAD_DIR = os.getenv("UPLOAD_DIR", "uploads")
-os.makedirs(UPLOAD_DIR, exist_ok=True)
 
 MAX_UPLOAD_SIZE_BYTES = int(os.getenv("MAX_UPLOAD_SIZE_BYTES", str(10 * 1024 * 1024)))
 
@@ -71,6 +70,7 @@ async def scan_image(file: UploadFile = File(...)):
     if not _validate_image_magic(content, file.content_type or ""):
         raise HTTPException(status_code=400, detail="Uploaded file is not a valid image")
 
+    os.makedirs(UPLOAD_DIR, exist_ok=True)
     safe_name = f"{uuid.uuid4().hex}{_safe_extension(file.content_type or '')}"
     file_path = os.path.join(UPLOAD_DIR, safe_name)
 

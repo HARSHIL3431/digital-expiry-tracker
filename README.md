@@ -247,7 +247,13 @@ Configure these on Render and/or Vercel. Do not commit real values.
 ### Render steps
 
 1. Create a Python web service from the repository.
-2. Build command: `pip install -r requirements.txt`; add `pip install -r requirements-ocr.txt` if OCR and Tesseract are required.
+2. Build command (installs the Tesseract binary + Python OCR wrappers on the
+   free starter plan; no Docker required):
+
+   ```text
+   apt-get update && apt-get install -y tesseract-ocr && pip install -r requirements.txt
+   ```
+
 3. Start command:
 
    ```text
@@ -256,7 +262,9 @@ Configure these on Render and/or Vercel. Do not commit real values.
 
 4. Set `healthCheckPath` to `/health`.
 5. Use a persistent disk at `/var/data` for SQLite and uploads, or switch `DATABASE_URL` to an external database after approving that migration.
-6. Install Tesseract in the Render build environment if OCR is enabled.
+6. Make `ENABLE_OCR=true` effective in the live Render environment (it is already
+   `true` in `render.yaml`; confirm it is not overridden to `false` in the
+   Render Dashboard env vars), then redeploy.
 7. Set all required environment variables; use a strong auto-generated `SECRET_KEY`.
 8. Update `GOOGLE_REDIRECT_URI` to the final callback route, such as `https://your-app.vercel.app/api/v1/auth/google/callback`.
 

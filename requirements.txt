@@ -30,3 +30,18 @@ typing-inspection==0.4.2
 typing_extensions==4.15.0
 uvicorn==0.38.0
 SQLAlchemy==2.0.39
+
+# OCR extras used by /api/v1/scan/* (Tesseract-only path).
+# opencv-python-headless is used instead of opencv-python to avoid system GUI
+# libraries on the headless Render build/runtime and to stay within free-tier
+# build limits. EasyOCR/torch is intentionally NOT included here: it is too
+# heavy for the free Render build and downloads ~100 MB of models at runtime.
+# The scan pipeline already degrades gracefully to Tesseract-only when
+# EasyOCR is unavailable.
+#
+# NOTE: the standalone Tesseract OCR binary is NOT pip-installable. It is
+# installed separately via `apt-get install -y tesseract-ocr` in the
+# render.yaml buildCommand (free-tier compatible; no Docker required).
+opencv-python-headless==4.10.0.84
+pytesseract==0.3.13
+numpy==1.26.4

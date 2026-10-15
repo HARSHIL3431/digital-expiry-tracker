@@ -51,11 +51,10 @@ class OCRService:
             import pytesseract  # noqa: F401
         except Exception:
             missing.append("pytesseract")
-        try:
-            import easyocr  # noqa: F401
-        except Exception:
-            missing.append("easyocr")
 
+        # EasyOCR remains optional: Tesseract can handle simple expiry labels
+        # without the heavier EasyOCR/Torch stack. It is only attempted in
+        # the fallback path and is ignored when absent.
         if missing:
             raise RuntimeError(
                 "OCR dependencies are missing: "
@@ -218,7 +217,11 @@ class OCRService:
             if self.expiry_parser.extract_expiry_date(text):
                 return tesseract_texts
 
-        easy_texts = self._easyocr_pipeline(image_path)
+        # Keep Tesseract-only deployments functional when EasyOCR is unavailable.
+        try:
+            easy_texts = self._easyocr_pipeline(image_path)
+        except RuntimeError:
+            return tesseract_texts
         return easy_texts
 
     def enhanced_extract_with_regions(self, image_path: str):
@@ -232,7 +235,15 @@ class OCRService:
                     "engine": "tesseract_full",
                 }
 
-        easy_regions = self._easyocr_pipeline_with_regions(image_path)
+        # EasyOCR is optional on free deployments where only Tesseract is installed.
+        try:
+            easy_regions = self._easyocr_pipeline_with_regions(image_path)
+        except RuntimeError:
+            return {
+                "texts": tesseract_texts,
+                "regions": [],
+                "engine": "tesseract_full",
+            }
         return {
             "texts": [region["text"] for region in easy_regions],
             "regions": easy_regions,

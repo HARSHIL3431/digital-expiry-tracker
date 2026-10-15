@@ -3,7 +3,7 @@ services:
     name: digital-expiry-tracker-api
     runtime: python
     plan: starter
-    buildCommand: pip install -r requirements.txt
+    buildCommand: apt-get update && apt-get install -y tesseract-ocr && pip install -r requirements.txt
     startCommand: mkdir -p /var/data/uploads && uvicorn app.main:app --host 0.0.0.0 --port $PORT
     healthCheckPath: /health
     disk:
