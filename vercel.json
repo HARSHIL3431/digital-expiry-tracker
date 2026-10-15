@@ -14,11 +14,11 @@
     },
     {
       "source": "/api/:path*",
-      "destination": "https://YOUR_RENDER_SERVICE.onrender.com/api/:path*"
+      "destination": "https://digital-expiry-tracker-api.onrender.com/api/:path*"
     },
     {
       "source": "/health",
-      "destination": "https://YOUR_RENDER_SERVICE.onrender.com/health"
+      "destination": "https://digital-expiry-tracker-api.onrender.com/health"
     }
   ]
 }
