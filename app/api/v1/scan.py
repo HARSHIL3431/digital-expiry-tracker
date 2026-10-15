@@ -5,6 +5,7 @@ from typing import Optional
 from fastapi import APIRouter, Depends, HTTPException, Query, UploadFile, File
 from sqlalchemy.orm import Session
 
+from app.core.config import ENABLE_OCR
 from app.core.dependencies import get_current_user
 from app.models import ScanResult, User
 from app.services.scan_service import ScanService
@@ -13,7 +14,7 @@ from app.utils.database import get_db
 router = APIRouter(tags=["Scan"])
 scan_service = ScanService()
 
-UPLOAD_DIR = "uploads"
+UPLOAD_DIR = os.getenv("UPLOAD_DIR", "uploads")
 os.makedirs(UPLOAD_DIR, exist_ok=True)
 
 MAX_UPLOAD_SIZE_BYTES = int(os.getenv("MAX_UPLOAD_SIZE_BYTES", str(10 * 1024 * 1024)))
@@ -51,6 +52,9 @@ def _safe_extension(content_type: str) -> str:
 async def scan_image(file: UploadFile = File(...)):
     if not _allowed_content_type(file.content_type):
         raise HTTPException(status_code=400, detail="Unsupported or missing image content type")
+
+    if not ENABLE_OCR:
+        raise HTTPException(status_code=503, detail="OCR processing is disabled by server configuration")
 
     chunks = []
     total_size = 0

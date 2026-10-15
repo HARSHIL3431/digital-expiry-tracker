@@ -57,3 +57,47 @@ ENABLE_EXPIRY_ALERT_SCHEDULER = os.getenv("ENABLE_EXPIRY_ALERT_SCHEDULER", "true
 # installation locations.  TESSERACT_PATH is retained for older deployments.
 TESSERACT_CMD = (os.getenv("TESSERACT_CMD") or os.getenv("TESSERACT_PATH") or "").strip()
 OCR_TIMEOUT_SECONDS = int(os.getenv("OCR_TIMEOUT_SECONDS", "30"))
+
+
+def parse_cors_allowed_origins(raw_value=None, environment=None):
+    """Parse explicit CORS origins. Wildcards are never used with credentials."""
+    if raw_value is None:
+        raw_value = os.getenv(
+            "CORS_ALLOWED_ORIGINS",
+            os.getenv("FRONTEND_URL", os.getenv("VERCEL_FRONTEND_URL", "")),
+        )
+
+    if environment is None:
+        environment = os.getenv("APP_ENV", os.getenv("ENVIRONMENT", "development")).lower()
+
+    environment = str(environment).lower()
+    origins = []
+
+    for value in str(raw_value or "").split(","):
+        value = value.strip()
+        if not value:
+            continue
+
+        if value == "*":
+            print("[CORS] Ignoring wildcard '*' because credentialed requests require explicit origins.")
+            continue
+
+        if value.startswith("http://") or value.startswith("https://"):
+            origins.append(value.rstrip("/"))
+        else:
+            print(f"[CORS] Ignoring invalid origin: {value}")
+
+    if not origins and environment in {"development", "dev", "local"}:
+        origins = [
+            "http://localhost:3000",
+            "http://127.0.0.1:3000",
+            "http://localhost:8000",
+            "http://127.0.0.1:8000",
+        ]
+
+    # Preserve order while removing duplicates.
+    return list(dict.fromkeys(origins))
+
+
+CORS_ALLOWED_ORIGINS = parse_cors_allowed_origins()
+ENABLE_OCR = os.getenv("ENABLE_OCR", "true").lower() in {"1", "true", "yes", "on"}

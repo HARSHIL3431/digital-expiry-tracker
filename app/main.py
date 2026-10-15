@@ -1,12 +1,22 @@
-from fastapi import FastAPI
+import os
 from contextlib import asynccontextmanager
+from fastapi import FastAPI
+from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
-from fastapi.responses import FileResponse
+from fastapi.middleware.cors import CORSMiddleware
+from sqlalchemy import text
 from starlette.middleware.sessions import SessionMiddleware
 
 from app.utils.database import init_db, SessionLocal
 from app import models  # noqa: F401  # ensures models are registered
-from app.core.config import DEMO_USER_PASSWORD, ENABLE_DEMO_USER, SECRET_KEY, SESSION_COOKIE_SECURE
+from app.core.config import (
+    CORS_ALLOWED_ORIGINS,
+    DEMO_USER_PASSWORD,
+    ENABLE_DEMO_USER,
+    ENABLE_OCR,
+    SECRET_KEY,
+    SESSION_COOKIE_SECURE,
+)
 from app.api.v1 import products, scan
 from app.api.v1 import auth
 from app.api.v1 import logs
@@ -99,6 +109,16 @@ app.add_middleware(
     max_age=300,
 )
 
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=CORS_ALLOWED_ORIGINS,
+    allow_credentials=True,
+    allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+    allow_headers=["Authorization", "Content-Type", "X-Requested-With"],
+    expose_headers=["Location"],
+    max_age=600,
+)
+
 
 # ------------------ FRONTEND STATIC FILES ------------------
 
@@ -111,12 +131,55 @@ app.mount("/assets", StaticFiles(directory="frontend/assets"), name="assets")
 # Landing Page
 @app.get("/health", tags=["Health"])
 def health_check():
-    return {"status": "ok", "service": "digital-expiry-tracker"}
+    return {
+        "status": "ok",
+        "service": "digital-expiry-tracker",
+        "ocr_enabled": ENABLE_OCR,
+    }
 
 
 @app.get("/api/health", tags=["Health"])
 def api_health_check():
-    return {"status": "ok", "service": "digital-expiry-tracker"}
+    return {
+        "status": "ok",
+        "service": "digital-expiry-tracker",
+        "ocr_enabled": ENABLE_OCR,
+    }
+
+
+@app.get("/health/ready", tags=["Health"])
+def readiness_check():
+    db_status = "ok"
+    upload_dir = os.getenv("UPLOAD_DIR", "uploads")
+
+    try:
+        database = SessionLocal()
+        try:
+            database.execute(text("SELECT 1"))
+        finally:
+            database.close()
+    except Exception:
+        db_status = "unavailable"
+
+    upload_status = "ok" if os.path.isdir(upload_dir) else "missing"
+    is_ready = db_status == "ok"
+    if not is_ready:
+        return JSONResponse(
+            status_code=503,
+            content={
+                "status": "not_ready",
+                "service": "digital-expiry-tracker",
+                "database": db_status,
+                "upload_storage": upload_status,
+            },
+        )
+
+    return {
+        "status": "ready",
+        "service": "digital-expiry-tracker",
+        "database": db_status,
+        "upload_storage": upload_status,
+    }
 
 
 @app.get("/", tags=["Frontend"])
