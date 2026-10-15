@@ -1,4 +1,5 @@
 import os
+import secrets
 from pathlib import Path
 from dotenv import load_dotenv
 
@@ -10,8 +11,13 @@ _raw_secret_key = os.getenv("SECRET_KEY")
 if not _raw_secret_key:
     if _environment in {"production", "prod"}:
         raise RuntimeError("SECRET_KEY must be configured in production")
-    _raw_secret_key = "dev-insecure-secret-change-me"
+    # Ephemeral development-only secret: never hardcoded, never valid across
+    # restarts, never suitable for production. Set SECRET_KEY in .env for
+    # stable local sessions.
+    _raw_secret_key = secrets.token_urlsafe(32)
+    print("[config] WARNING: SECRET_KEY not set; using ephemeral dev secret.")
 SECRET_KEY = _raw_secret_key
+DEMO_USER_PASSWORD = os.getenv("DEMO_USER_PASSWORD", "")
 
 _raw_demo_user = os.getenv("ENABLE_DEMO_USER")
 if _raw_demo_user is None:
@@ -51,3 +57,47 @@ ENABLE_EXPIRY_ALERT_SCHEDULER = os.getenv("ENABLE_EXPIRY_ALERT_SCHEDULER", "true
 # installation locations.  TESSERACT_PATH is retained for older deployments.
 TESSERACT_CMD = (os.getenv("TESSERACT_CMD") or os.getenv("TESSERACT_PATH") or "").strip()
 OCR_TIMEOUT_SECONDS = int(os.getenv("OCR_TIMEOUT_SECONDS", "30"))
+
+
+def parse_cors_allowed_origins(raw_value=None, environment=None):
+    """Parse explicit CORS origins. Wildcards are never used with credentials."""
+    if raw_value is None:
+        raw_value = os.getenv(
+            "CORS_ALLOWED_ORIGINS",
+            os.getenv("FRONTEND_URL", os.getenv("VERCEL_FRONTEND_URL", "")),
+        )
+
+    if environment is None:
+        environment = os.getenv("APP_ENV", os.getenv("ENVIRONMENT", "development")).lower()
+
+    environment = str(environment).lower()
+    origins = []
+
+    for value in str(raw_value or "").split(","):
+        value = value.strip()
+        if not value:
+            continue
+
+        if value == "*":
+            print("[CORS] Ignoring wildcard '*' because credentialed requests require explicit origins.")
+            continue
+
+        if value.startswith("http://") or value.startswith("https://"):
+            origins.append(value.rstrip("/"))
+        else:
+            print(f"[CORS] Ignoring invalid origin: {value}")
+
+    if not origins and environment in {"development", "dev", "local"}:
+        origins = [
+            "http://localhost:3000",
+            "http://127.0.0.1:3000",
+            "http://localhost:8000",
+            "http://127.0.0.1:8000",
+        ]
+
+    # Preserve order while removing duplicates.
+    return list(dict.fromkeys(origins))
+
+
+CORS_ALLOWED_ORIGINS = parse_cors_allowed_origins()
+ENABLE_OCR = os.getenv("ENABLE_OCR", "true").lower() in {"1", "true", "yes", "on"}
